@@ -3,6 +3,17 @@
     --color-primary:#4b4fe0;
      --color-primary-hover:#4145cf;
      --color-primary-light:#eeeeff;
+     /*colors for common componets*/
+      
+      --color-success:#168653;
+      --color-success-light:#e7f7ef;
+      --color-warning: #9a6700;
+      --color-warning-light:#fff5dc;
+      --color-danger:#d7373d;
+      --color-danger-light:#ffebeb;
+      --color-info:#2864c5;
+      --color-info-light:#e8f2ff;
+
 
      /* Text colors */
      --color-text-primary:#101323;
@@ -90,5 +101,9 @@
             --z-modal:400;
             --z-tooltip:500;
                       
-
+     /* Global Typography */
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
             }
