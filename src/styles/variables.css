@@ -1,0 +1,94 @@
+:root{
+    /* MAin Colors */
+    --color-primary:#4b4fe0;
+     --color-primary-hover:#4145cf;
+     --color-primary-light:#eeeeff;
+
+     /* Text colors */
+     --color-text-primary:#101323;
+     --color-text-secondary:#626779;
+     --color-text-muted:#8b90a0;
+
+     /*Background*/
+     --color-background:#f5f6f8;
+     --color-sidebar:#fafafb;
+     --color-surface:#ffffff;
+     --color-surface-secondary:#f8f9fb;
+
+     /*border-colors*/
+      --color-border:#e7e8ec;
+      --color-border-strong:#d9dbe2;
+
+      /* Borders */
+      --border-width:1px;
+      --border-style:solid;
+
+      /* Border Radius */
+       --radius-sm:4px;
+       --radius-md:6px;
+       --radius-lg:8px;
+       --radius-xl:12px;
+       --radius-full:9999px;
+
+      /*status colors*/
+        --color-success:#16a36a;
+        --color-warning:#e5a000;
+        --color-danger:#e5484d;
+        --color-info:#3984f5;
+
+      /*typography*/
+         --font-family-base:"Geist",system-ui,sans-serif;
+         --font-size-xs:11px;
+         --font-size-sm:12px;
+         --font-size-base:13px;
+         --font-size-md:14px;
+         --font-size-lg:16px;
+         --font-size-xl:18px;
+         --font-size-2xl:22px;
+         --font-size-3xl:28px;
+         --font-weight-normal:400;
+         --font-weight-medium:500;
+         --font-weight-semibold:600;
+         --font-weight-bold:700;
+         /*line height*/
+         --line-height-tight:1.25;
+         --line-height-normal:1.5;
+         --line-height-relaxed:1.65;
+
+
+         /*spacing*/
+            --spacing-1:4px;
+            --spacing-2:8px;
+            --spacing-3:12px;
+            --spacing-4:16px;
+            --spacing-5:20px;
+            --spacing-6:24px;
+            --spacing-8:32px;
+            --spacing-10:40px;
+            --spacing-12:48px;
+
+        /*shadow*/
+            --shadow-sm:0 1px 2px rgb(16 19 35/5%);
+            --shadow-md: 0 4px 12px rgb(16 19 35/8%);
+            --shadow-lg: 0 8px 24px rgb(16 19 35/10%);
+
+        /* Transitions */
+            --transition-fast:150ms ease;
+            --transition-normal:200ms ease;
+            --transition-slow:300ms ease;
+
+        /* Layout */
+            --sidebar-width:248px;
+            --header-height:64px;
+            --page-padding:24px;
+            --content-max-width:1600px;
+
+        /* Z-index */
+            --z-dropdown:100;
+            --z-sticky:200;
+            --z-overlay:300;
+            --z-modal:400;
+            --z-tooltip:500;
+                      
+
+            }
