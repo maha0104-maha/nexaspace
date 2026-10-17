@@ -1,9 +1,9 @@
-import { FiSearch, FiX } from "react-icons/fi";
+import { Search, X } from "lucide-react";
 
 const SearchInput=({value="",onChange,placeholder="Search...",className="",onClear,...props})=>{
     return(
         <div className={`relative flex h-9 w-full items-center ${className}`}>
-            <FiSearch className="absolute left-3 h-4 w-4 text-[var(--color-text-muted)]"/>
+            <Search className="absolute left-3 h-4 w-4 text-[var(--color-text-muted)]"/>
             <input
                 type="search"
                 value={value}
@@ -13,7 +13,7 @@ const SearchInput=({value="",onChange,placeholder="Search...",className="",onCle
                 {...props}/>
             {value&&(
                 <button type="button" onClick={()=>onClear?onClear():onChange?.({target:{value:""}})} aria-label="Clear search" className="absolute right-3 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                    <FiX className="h-4 w-4"/>
+                    <X className="h-4 w-4"/>
                 </button>
             )}
         </div>
