@@ -1,6 +1,6 @@
 import React from "react";
 const Badge=({
-  children,variant = "default",size = "md",className = ""})=>{
+  children,variant = "default",size = "md",className = "",style})=>{
   const variants={
     default:"bg-[var(--color-background)] text-[var(--color-text-secondary)]",
     primary:"bg-[var(--color-primary-light)] text-[var(--color-primary)]",
@@ -14,7 +14,7 @@ const Badge=({
     md: "px-2.5 py-1 text-xs",
   };
   return (
-    <span className={`inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ${variants[variant]||variants.default} ${sizes[size]||sizes.md} ${className}`}>
+    <span style={style} className={`inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium ${variants[variant]||variants.default} ${sizes[size]||sizes.md} ${className}`}>
       {children}
     </span>
   );

@@ -1,63 +1,55 @@
-import { projects } from "./projects";
-import { tasks } from "./tasks";
+import { projects, getProgress } from "./projects";
+import { tasks, TASK_STATUSES, STATUS_META } from "./tasks";
 
+// Dashboard / report numbers derived from the mock data above.
 export const getDashboardStats = () => {
   const totalProjects = projects.length;
-
-  const activeProjects = projects.filter(
-    (project) => project.status === "In Progress"
-  ).length;
-
-  const completedProjects = projects.filter(
-    (project) => project.status === "Completed"
-  ).length;
+  const onTrack = projects.filter((p) => p.status === "On Track").length;
+  const atRisk = projects.filter((p) => p.status === "At Risk").length;
+  const delayed = projects.filter((p) => p.status === "Delayed").length;
 
   const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === "Done").length;
+  const myOpenTasks = tasks.filter((t) => t.assigneeId === "user-1" && t.status !== "Done").length;
 
-  const completedTasks = tasks.filter(
-    (task) => task.status === "Done"
-  ).length;
-
-  const inProgressTasks = tasks.filter(
-    (task) => task.status === "In Progress"
-  ).length;
-
-  const todoTasks = tasks.filter(
-    (task) => task.status === "To Do"
-  ).length;
-
-  const completionRate =
-    totalTasks === 0
-      ? 0
-      : Math.round((completedTasks / totalTasks) * 100);
-
+  const completionRate = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
   const averageProjectProgress =
     totalProjects === 0
       ? 0
-      : Math.round(
-          projects.reduce((total, project) => total + project.progress, 0) /
-            totalProjects
-        );
+      : Math.round(projects.reduce((sum, p) => sum + getProgress(p), 0) / totalProjects);
 
   return {
     totalProjects,
-    activeProjects,
-    completedProjects,
+    onTrack,
+    atRisk,
+    delayed,
+    projectsAtRisk: atRisk + delayed,
     totalTasks,
     completedTasks,
-    inProgressTasks,
-    todoTasks,
+    myOpenTasks,
     completionRate,
     averageProjectProgress,
   };
 };
 
+// Donut chart on the dashboard.
+export const getStatusBreakdown = () =>
+  TASK_STATUSES.map((status) => ({
+    label: status,
+    value: tasks.filter((t) => t.status === status).length,
+    color: STATUS_META[status].bar,
+  }));
+
+// "Task completion — last 8 weeks" chart (completed total 23, created total 53).
 export const weeklyTaskCompletion = [
-  { day: "Mon", completed: 3 },
-  { day: "Tue", completed: 5 },
-  { day: "Wed", completed: 4 },
-  { day: "Thu", completed: 7 },
-  { day: "Fri", completed: 6 },
-  { day: "Sat", completed: 2 },
-  { day: "Sun", completed: 1 },
+  { label: "Aug 24", completed: 0, created: 0 },
+  { label: "Aug 31", completed: 0, created: 2 },
+  { label: "Sep 7", completed: 2, created: 2 },
+  { label: "Sep 14", completed: 2, created: 5 },
+  { label: "Sep 21", completed: 6, created: 6 },
+  { label: "Sep 28", completed: 5, created: 18 },
+  { label: "Oct 5", completed: 8, created: 11 },
+  { label: "Oct 12", completed: 0, created: 9 },
 ];
+
+export const teamUtilization = { percent: 32, window: "Next 14 days · estimated hours" };
