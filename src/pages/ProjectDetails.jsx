@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
-import ProjectHeader from "../components/projects/ProjectHeader";
+import ProjectHeader from "../components/projects/details/ProjectHeader";
+import OverviewTab from "../components/projects/details/OverviewTab";
 import { loadJSON, saveJSON } from "../utils/storage";
-import { projects as seedProjects, getUserById, getTasksByProject, getFilesByProject } from "../data";
+import { projects as seedProjects, getUserById, getTasksByProject, getFilesByProject, getMilestonesByProject, getActivitiesByProject } from "../data";
 
 const KEY = "nexaspace.projects.v1";
 // same list the Projects page uses
@@ -15,7 +16,6 @@ const getProjects = () => {
 };
 
 const TAB_TEXT = {
-  overview: "Overview",
   board: "Board",
   list: "List",
   timeline: "Timeline",
@@ -56,9 +56,14 @@ function Details({ first }) {
         <ProjectHeader project={project} tasks={tasks} fileCount={files.length} members={members} isDemo={isDemo}
           tab={tab} onTab={setTab} onStatus={changeStatus} onDuplicate={duplicate}
           onArchive={() => remove(false)} onDelete={() => remove(true)} />
-        <div className="p-5">
-          <EmptyState title={TAB_TEXT[tab] + " tab"} description="This tab gets built in the next step." />
-        </div>
+        {tab === "overview" && (
+          <OverviewTab project={project} tasks={tasks} milestones={getMilestonesByProject(project.id)} activities={getActivitiesByProject(project.id)} />
+        )}
+        {tab !== "overview" && (
+          <div className="p-5">
+            <EmptyState title={TAB_TEXT[tab] + " tab"} description="This tab gets built in a later step." />
+          </div>
+        )}
       </Card>
     </div>
   );
