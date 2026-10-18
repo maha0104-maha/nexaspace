@@ -1,4 +1,5 @@
 import {useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {Search,Plus,Bell,ChevronDown,ChevronRight,X,Check,CheckSquare,FolderPlus,
 } from "lucide-react";
 import Button from "../common/Button";
@@ -6,8 +7,20 @@ import Input from "../common/Input";
 import Dropdown from "../common/Dropdown";
 import Avatar from "../common/Avatar";
 import Badge from "../common/Badge";
+import { loadJSON } from "../../utils/storage";
+import { projects as seedProjects } from "../../data";
+
+// project name
+const getProjectName = (id) => {
+  const saved = loadJSON("nexaspace.projects.v1", null);
+  const list = Array.isArray(saved) ? saved : seedProjects;
+  return list.find((p) => p.id === id)?.name || "Project";
+};
 
 function Header({title="Overview",onCreateTask,onCreateProject}) {
+  const { pathname } = useLocation();
+  const match = pathname.match(/^\/projects\/([^/]+)/);
+  const heading = match ? getProjectName(match[1]) : pathname === "/projects" ? "Projects" : title;
   const [searchOpen,setSearchOpen]=useState(false);
   const [searchValue,setSearchValue]=useState("");
   const [notificationsOpen,setNotificationsOpen]=useState(false);
@@ -30,15 +43,21 @@ function Header({title="Overview",onCreateTask,onCreateProject}) {
     <header className="sticky top-0 z-30 w-full border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="flex h-[64px] items-center justify-between gap-3 pl-[60px] pr-4 sm:pr-[20px] lg:pl-[34px]">
         <div className="flex min-w-0 items-center gap-[10px] text-[13px] leading-[18px]">
-          <span className="hidden truncate font-normal text-[#4B5563] sm:inline">
-            Lumen Studio
-          </span>
+          {match?(
+            <Link to="/projects" className="hidden truncate font-normal text-[#4B5563] hover:text-[var(--color-primary)] sm:inline">
+              Projects
+            </Link>
+          ):(
+            <span className="hidden truncate font-normal text-[#4B5563] sm:inline">
+              Lumen Studio
+            </span>
+          )}
           <ChevronRight
             size={14}
             strokeWidth={1.8}
             className="hidden shrink-0 text-[var(--color-text-muted)] sm:block"/>
           <h1 className="truncate text-[13px] font-semibold leading-[18px] text-[var(--color-text-primary)]">
-            {title}
+            {heading}
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-[12px]">
