@@ -5,7 +5,6 @@ import Header from "./components/layout/Header";
 
 
 import Projects from "./pages/Projects";
-import ProjectDetails from "./pages/ProjectDetails";
 
 function App() {
     return (
@@ -20,7 +19,6 @@ function App() {
                         <Routes>
                            
                             <Route path="/projects" element={<Projects />} />
-                            <Route path="/projects/:projectId" element={<ProjectDetails />} />
                         </Routes>
                     </main>
                 </div>

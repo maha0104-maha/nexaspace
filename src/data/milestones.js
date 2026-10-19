@@ -1,4 +1,3 @@
-// Milestones (Overview tab "Milestones" card + the diamond marker on the Timeline tab).
 
 export const milestones = [
   { id: "ms-atlas-1", projectId: "atlas", title: "Beta release", date: "2026-10-31" },
