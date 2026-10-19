@@ -5,6 +5,11 @@ import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
 import ProjectHeader from "../components/projects/details/ProjectHeader";
 import OverviewTab from "../components/projects/details/OverviewTab";
+import BoardTab from "../components/projects/details/BoardTab";
+import ListTab from "../components/projects/details/ListTab";
+import TimelineTab from "../components/projects/details/TimelineTab";
+import FilesTab from "../components/projects/details/FilesTab";
+import ActivityTab from "../components/projects/details/ActivityTab";
 import { loadJSON, saveJSON } from "../utils/storage";
 import { projects as seedProjects, getUserById, getTasksByProject, getFilesByProject, getMilestonesByProject, getActivitiesByProject } from "../data";
 
@@ -15,14 +20,6 @@ const getProjects = () => {
   return Array.isArray(saved) ? saved : seedProjects;
 };
 
-const TAB_TEXT = {
-  board: "Board",
-  list: "List",
-  timeline: "Timeline",
-  files: "Files",
-  activity: "Activity",
-};
-
 function Details({ first }) {
   const navigate = useNavigate();
   const [project, setProject] = useState(first);
@@ -30,8 +27,16 @@ function Details({ first }) {
   useEffect(() => {
     saveJSON("nexaspace.tab." + project.id, tab);
   }, [tab]);
-  const tasks = getTasksByProject(project.id);
+  // tasks live in state so the board can change them (saved in localStorage)
+  const [tasks, setTasks] = useState(() => loadJSON("nexaspace.tasks." + first.id, getTasksByProject(first.id)));
+  useEffect(() => {
+    saveJSON("nexaspace.tasks." + project.id, tasks);
+  }, [tasks]);
+  const updateTask = (id, changes) => setTasks(tasks.map((t) => (t.id === id ? { ...t, ...changes } : t)));
+  const moveTask = (id, status) => updateTask(id, { status });
   const files = getFilesByProject(project.id);
+  const milestones = getMilestonesByProject(project.id);
+  const activities = getActivitiesByProject(project.id);
   const members = project.memberIds.map(getUserById).filter(Boolean);
   const isDemo = seedProjects.some((p) => p.id === project.id);
 
@@ -57,13 +62,13 @@ function Details({ first }) {
           tab={tab} onTab={setTab} onStatus={changeStatus} onDuplicate={duplicate}
           onArchive={() => remove(false)} onDelete={() => remove(true)} />
         {tab === "overview" && (
-          <OverviewTab project={project} tasks={tasks} milestones={getMilestonesByProject(project.id)} activities={getActivitiesByProject(project.id)} />
+          <OverviewTab project={project} tasks={tasks} milestones={milestones} activities={activities} />
         )}
-        {tab !== "overview" && (
-          <div className="p-5">
-            <EmptyState title={TAB_TEXT[tab] + " tab"} description="This tab gets built in a later step." />
-          </div>
-        )}
+        {tab === "board" && <BoardTab projectId={project.id} tasks={tasks} members={members} onMove={moveTask} />}
+        {tab === "list" && <ListTab tasks={tasks} onUpdate={updateTask} />}
+        {tab === "timeline" && <TimelineTab projectId={project.id} project={project} tasks={tasks} milestones={milestones} />}
+        {tab === "files" && <FilesTab files={files} />}
+        {tab === "activity" && <ActivityTab activities={activities} />}
       </Card>
     </div>
   );
