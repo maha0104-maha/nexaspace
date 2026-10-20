@@ -1,3 +1,5 @@
+// Files shown on the "Files" tab of a project (and as task attachments).
+// type: "fig" | "pdf" | "png" | "doc"  ·  sizeMb is a number, format with `${sizeMb.toFixed(1)} MB`.
 
 export const FILE_TYPE_STYLES = {
   fig: { color: "#7C5CFA", bg: "#F1EEFF", label: "Figma" },

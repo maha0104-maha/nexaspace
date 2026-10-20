@@ -1,8 +1,8 @@
 import { Flag, Eye, CircleCheck } from "lucide-react";
-import Card from "../../common/Card";
-import Avatar from "../../common/Avatar";
-import { TASK_STATUSES, STATUS_META, formatLongDate, daysUntil, getUserById } from "../../../data";
-import { getDueLabel, isOverdue, DUE_COLORS } from "../../../utils/taskUtils";
+import Card from "../common/Card";
+import Avatar from "../common/Avatar";
+import { TASK_STATUSES, STATUS_META, formatLongDate, daysUntil, getUserById } from "../../data";
+import { getDueLabel, isOverdue, DUE_COLORS } from "../../utils/taskUtils";
 
 // small pieces used only in this file (we can move them to common later)
 function Panel({ title, children }) {

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { X } from "lucide-react";
 
 const Modal=({isOpen,onClose,title,children,footer,className=""})=>{
     useEffect(()=>{
@@ -16,7 +17,7 @@ const Modal=({isOpen,onClose,title,children,footer,className=""})=>{
             <div role="dialog" aria-modal="true" aria-label={title||"Dialog"} className={`relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl ${className}`}>
                 <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
                     <h2 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h2>
-                    <button type="button" onClick={onClose} aria-label="Close modal" className="rounded-md p-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]">✕</button>
+                    <button type="button" onClick={onClose} aria-label="Close modal" className="rounded-md p-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]"><X size={16} strokeWidth={1.8} /></button>
                 </div>
                 <div className="p-5">{children}</div>
                 {footer&&(

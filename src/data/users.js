@@ -1,4 +1,6 @@
-// Team members for the NexaSpace
+// Team members for the NexaSpace / Lumen Studio workspace.
+// `avatarBg` / `avatarFg` are the pastel colours used for the initials circles.
+
 export const currentUserId = "user-1";
 
 export const users = [

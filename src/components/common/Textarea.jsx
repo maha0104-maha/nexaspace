@@ -1,4 +1,3 @@
-import React from "react";
 const Textarea=({label,error,helperText,className="",id,...props})=>{
     const textareaId=id||props.name;
 

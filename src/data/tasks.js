@@ -1,4 +1,10 @@
-// Tasks for all six projects (
+// Tasks for all six projects (60 total — matches the dashboard: 6 backlog, 12 to do,
+// 12 in progress, 7 in review, 23 done). Atlas SaaS Dashboard is fully detailed because
+// it is the project opened in the board / list / timeline / task drawer screens.
+//
+// Task keys follow the "NX-<n>" scheme:
+//   clinic 1–10 · atlas 11–20 · ember 21–30 · northwind 31–40 · loom 41–50 · analytics 51–60
+
 export const TASK_STATUSES = ["Backlog", "To Do", "In Progress", "In Review", "Done"];
 export const TASK_PRIORITIES = ["Low", "Medium", "High", "Urgent"];
 export const TASK_LABELS = ["Design", "Frontend", "Backend", "QA", "Content", "Research", "Bug"];

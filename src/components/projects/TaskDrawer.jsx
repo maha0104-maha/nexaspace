@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Trash2, RotateCcw, Check, Upload, CircleDot, Flag, User, UserCircle, Calendar, Timer, Tag, GitBranch, Ban, PenTool, FileText, Image as ImageIcon } from "lucide-react";
+import { X, Trash2, RotateCcw, Check, Upload, CircleDot, Flag, User, UserCircle, Calendar, Timer, Tag, GitBranch, Ban, PenTool, FileText, Image as ImageIcon, ChevronRight, ArrowRight, Plus } from "lucide-react";
 import Button from "../common/Button";
 import Tabs from "../common/Tabs";
 import Toggle from "../common/Toggle";
@@ -98,7 +98,7 @@ function TaskDrawer({ task, project, store, onClose, onDelete }) {
       <aside role="dialog" aria-modal="true" aria-label={task.title} className="relative h-full w-full max-w-[580px] overflow-y-auto bg-white shadow-xl">
         <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-[var(--color-border)] bg-white px-5 py-3">
           <span className="flex min-w-0 flex-1 items-center gap-2 text-[13px] text-[#4B5563]">
-            <span className="truncate">{project.name}</span><span className="text-[#9CA3AF]">›</span><span className="font-mono text-xs">{task.id}</span>
+            <span className="truncate">{project.name}</span><ChevronRight size={13} className="shrink-0 text-[#9CA3AF]" /><span className="font-mono text-xs">{task.id}</span>
           </span>
           {done ? (
             <Button variant="outline" size="sm" onClick={() => save({ status: "To Do" })}><RotateCcw size={13} />Reopen</Button>
@@ -143,7 +143,7 @@ function TaskDrawer({ task, project, store, onClose, onDelete }) {
             <Row icon={Calendar} label="Dates">
               <div className="flex items-center gap-2">
                 <input type="date" value={task.startDate} max={task.dueDate} onChange={(e) => e.target.value && save({ startDate: e.target.value })} aria-label="Start date" className="h-8 rounded-lg border border-[var(--color-border)] px-2 text-[13px]" />
-                <span className="text-[#9CA3AF]">→</span>
+                <ArrowRight size={13} className="text-[#9CA3AF]" />
                 <input type="date" value={task.dueDate} min={task.startDate} onChange={(e) => e.target.value && save({ dueDate: e.target.value })} aria-label="Due date" className="h-8 rounded-lg border border-[var(--color-border)] px-2 text-[13px]" />
               </div>
             </Row>
@@ -159,7 +159,7 @@ function TaskDrawer({ task, project, store, onClose, onDelete }) {
                   return (
                     <button key={l} type="button" aria-pressed={on} onClick={() => save({ label: on ? "" : l })} className="flex h-7 items-center gap-1 rounded-lg border px-2.5 text-xs"
                       style={on ? { backgroundColor: LABEL_STYLES[l].bg, color: LABEL_STYLES[l].fg, borderColor: LABEL_STYLES[l].bg } : { borderColor: "var(--color-border)", color: "#4B5563" }}>
-                      {on ? <Check size={11} /> : "+"} {l}
+                      {on ? <Check size={11} /> : <Plus size={11} />}{l}
                     </button>
                   );
                 })}

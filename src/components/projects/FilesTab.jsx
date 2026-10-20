@@ -1,7 +1,7 @@
 import { PenTool, FileText, Image as ImageIcon } from "lucide-react";
-import Avatar from "../../common/Avatar";
-import EmptyState from "../../common/EmptyState";
-import { FILE_TYPE_STYLES, getUserById } from "../../../data";
+import Avatar from "../common/Avatar";
+import EmptyState from "../common/EmptyState";
+import { FILE_TYPE_STYLES, getUserById } from "../../data";
 
 const ICONS = { fig: PenTool, pdf: FileText, png: ImageIcon, doc: FileText };
 

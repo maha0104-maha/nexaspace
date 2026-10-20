@@ -1,121 +1,136 @@
-import {useState} from "react";
-import {Check,Flag,Plus} from "lucide-react";
+import { useState } from "react";
+import { Check, Flag, Plus } from "lucide-react";
+
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import Input from "../common/Input";
 import Textarea from "../common/Textarea";
 import Dropdown from "../common/Dropdown";
 import Avatar from "../common/Avatar";
-import {ICONS} from "./ProjectCard";
-import {users,currentUserId,
-    DEMO_TODAY,PROJECT_COLORS,PROJECT_ICONS,
-    PROJECT_PRIORITIES,PROJECT_STATUSES,PRIORITY_STYLES,
-    STATUS_STYLES} from "../../data";
 
+import { ICONS } from "./ProjectCard";
+import {
+    users,
+    currentUserId,
+    DEMO_TODAY,
+    PROJECT_COLORS,
+    PROJECT_ICONS,
+    PROJECT_PRIORITIES,
+    PROJECT_STATUSES,
+    PRIORITY_STYLES,
+    STATUS_STYLES,
+} from "../../data";
 
-const addDays=(iso,days)=>{
-    const date=new Date(`${iso}T00:00:00`);
-    date.setDate(date.getDate()+days);
-    const pad=(n)=>String(n).padStart(2,"0");
-    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+/* -------------------------------------------------------------------------- */
+/*                                   helpers                                  */
+/* -------------------------------------------------------------------------- */
+
+const addDays = (iso, days) => {
+    const date = new Date(`${iso}T00:00:00`);
+    date.setDate(date.getDate() + days);
+
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
 
-const INITIAL_VALUES={
-    name:"",
-    description:"",
-    client:"",
-    leadId:currentUserId,
-    startDate:DEMO_TODAY,
-    dueDate:addDays(DEMO_TODAY,42),
-    priority:"Medium",
-    status:"On Track",
-    memberIds:[currentUserId],
-    color:PROJECT_COLORS[0],
-    icon:PROJECT_ICONS[0]
+const INITIAL_VALUES = {
+    name: "",
+    description: "",
+    client: "",
+    leadId: currentUserId,
+    startDate: DEMO_TODAY,
+    dueDate: addDays(DEMO_TODAY, 42),
+    priority: "Medium",
+    status: "On Track",
+    memberIds: [currentUserId],
+    color: PROJECT_COLORS[0],
+    icon: PROJECT_ICONS[0],
 };
 
-// Build a new project or update an existing project's editable fields.
-export const buildProject=(values,existingProject=null)=>({
-    ...(existingProject||{}),
-    id:existingProject?.id||`project-${Date.now()}`,
-    name:values.name.trim(),
-    client:values.client.trim()||"Internal",
-    description:values.description.trim(),
-    status:values.status,
-    priority:values.priority,
-    leadId:values.leadId,
-    memberIds:values.memberIds.includes(values.leadId)
-        ?values.memberIds
-        :[values.leadId,...values.memberIds],
-    startDate:values.startDate,
-    dueDate:values.dueDate,
-    createdAt:existingProject?.createdAt||new Date().toISOString().slice(0,10),
-    taskTotal:existingProject?.taskTotal??0,
-    taskDone:existingProject?.taskDone??0,
-    icon:values.icon,
-    iconBg:`${values.color}1F`,
-    iconColor:values.color,
-    color:values.color,
-    sidebarProgress:existingProject?.sidebarProgress||"0%",
-    filesCount:existingProject?.filesCount??0,
-    boardCount:existingProject?.boardCount??0,
-    openTasks:existingProject?.openTasks??0,
-    overdueTasks:existingProject?.overdueTasks??0,
-    blockedTasks:existingProject?.blockedTasks??0,
-    estHoursLeft:existingProject?.estHoursLeft??0,
+// form values -> a record shaped like the ones in data/projects.js
+const buildProject = (values) => ({
+    id: `project-${Date.now()}`,
+    name: values.name.trim(),
+    client: values.client.trim() || "Internal",
+    description: values.description.trim(),
+    status: values.status,
+    priority: values.priority,
+    leadId: values.leadId,
+    memberIds: values.memberIds.includes(values.leadId)
+        ? values.memberIds
+        : [values.leadId, ...values.memberIds],
+    startDate: values.startDate,
+    dueDate: values.dueDate,
+    createdAt: new Date().toISOString().slice(0, 10),
+    taskTotal: 0,
+    taskDone: 0,
+    icon: values.icon,
+    iconBg: `${values.color}1F`,
+    iconColor: values.color,
+    color: values.color,
+    sidebarProgress: "0%",
+    filesCount: 0,
+    boardCount: 0,
+    openTasks: 0,
+    overdueTasks: 0,
+    blockedTasks: 0,
+    estHoursLeft: 0,
 });
 
-const validate=(values)=>{
-    const errors={};
+const validate = (values) => {
+    const errors = {};
 
-    if(!values.name.trim()) errors.name="Project name is required";
-    if(!values.startDate) errors.startDate="Start date is required";
-    if(!values.dueDate) errors.dueDate="Deadline is required";
-    else if(values.startDate&&values.dueDate<values.startDate){
-        errors.dueDate="Deadline must be on or after the start date";
+    if (!values.name.trim()) errors.name = "Project name is required";
+    if (!values.startDate) errors.startDate = "Start date is required";
+    if (!values.dueDate) errors.dueDate = "Deadline is required";
+    else if (values.startDate && values.dueDate < values.startDate) {
+        errors.dueDate = "Deadline must be on or after the start date";
     }
-
-    if(!values.memberIds.length) errors.memberIds="Pick at least one team member";
+    if (!values.memberIds.length) errors.memberIds = "Pick at least one team member";
 
     return errors;
 };
 
-const Required=({children})=>(
+/* -------------------------------------------------------------------------- */
+/*                         small form-only components                         */
+/* -------------------------------------------------------------------------- */
+
+const Required = ({ children }) => (
     <>
-        {children}<span className="text-[var(--color-danger)]">*</span>
+        {children} <span className="text-[var(--color-danger)]">*</span>
     </>
 );
 
-const Field=({label,required,error,children})=>(
+const Field = ({ label, required, error, children }) => (
     <div>
         <p className="mb-1.5 text-[13px] font-medium text-[var(--color-text-primary)]">
-            {required?<Required>{label}</Required>:label}
+            {required ? <Required>{label}</Required> : label}
         </p>
         {children}
-        {error&&<p className="mt-1.5 text-xs text-[var(--color-danger)]">{error}</p>}
+        {error && <p className="mt-1.5 text-xs text-[var(--color-danger)]">{error}</p>}
     </div>
 );
 
-const Segmented=({label,value,options,onChange})=>(
+const Segmented = ({ label, value, options, onChange }) => (
     <div
         role="radiogroup"
         aria-label={label}
         className="flex gap-1 rounded-[10px] bg-[var(--color-background)] p-1"
     >
-        {options.map((option)=>{
-            const active=value===option.value;
+        {options.map((option) => {
+            const active = value === option.value;
 
-            return(
+            return (
                 <Button
                     key={option.value}
                     variant="ghost"
                     role="radio"
                     aria-checked={active}
-                    onClick={()=>onChange(option.value)}
+                    onClick={() => onChange(option.value)}
                     className={`!h-8 flex-1 !px-2 ${
                         active
-                            ?"!bg-[var(--color-surface)] !text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
-                            :""
+                            ? "!bg-[var(--color-surface)] !text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+                            : ""
                     }`}
                 >
                     {option.icon}
@@ -126,85 +141,54 @@ const Segmented=({label,value,options,onChange})=>(
     </div>
 );
 
-// Form for creating a new project or editing an existing one.
-const FormBody=({onClose,onSubmit,editProject})=>{
-    const [values,setValues]=useState(()=>{
-        if(!editProject){
-            return {
-                ...INITIAL_VALUES,
-                memberIds:[...INITIAL_VALUES.memberIds],
-            };
-        }
+/* -------------------------------------------------------------------------- */
+/*                                    form                                    */
+/* -------------------------------------------------------------------------- */
 
-        return {
-            ...INITIAL_VALUES,
-            name:editProject.name||"",
-            description:editProject.description||"",
-            client:editProject.client||"",
-            leadId:editProject.leadId||currentUserId,
-            startDate:editProject.startDate||DEMO_TODAY,
-            dueDate:editProject.dueDate||addDays(DEMO_TODAY,42),
-            priority:editProject.priority||"Medium",
-            status:editProject.status||"On Track",
-            memberIds:editProject.memberIds?.length
-                ?[...editProject.memberIds]
-                :[editProject.leadId||currentUserId],
-            color:editProject.color||editProject.iconColor||PROJECT_COLORS[0],
-            icon:editProject.icon||PROJECT_ICONS[0],
-        };
-    });
+const FormBody = ({ onClose, onSubmit }) => {
+    const [values, setValues] = useState(INITIAL_VALUES);
+    const [errors, setErrors] = useState({});
 
-    const [errors,setErrors]=useState({});
-
-    const set=(key,value)=>{
-        setValues((current)=>({...current,[key]:value}));
-
-        if(errors[key]){
-            setErrors((current)=>({...current,[key]:undefined}));
-        }
+    const set = (key, value) => {
+        setValues((current) => ({ ...current, [key]: value }));
+        if (errors[key]) setErrors((current) => ({ ...current, [key]: undefined }));
     };
 
-    const changeLead=(leadId)=>{
-        setValues((current)=>({
+    const changeLead = (leadId) =>
+        setValues((current) => ({
             ...current,
             leadId,
-            memberIds:current.memberIds.includes(leadId)
-                ?current.memberIds
-                :[...current.memberIds,leadId],
+            memberIds: current.memberIds.includes(leadId)
+                ? current.memberIds
+                : [...current.memberIds, leadId],
         }));
 
-        if(errors.memberIds){
-            setErrors((current)=>({...current,memberIds:undefined}));
-        }
-    };
-
-    const toggleMember=(id)=>{
-        if(id===values.leadId) return;
+    const toggleMember = (id) => {
+        if (id === values.leadId) return; // the lead is always part of the team
 
         set(
             "memberIds",
             values.memberIds.includes(id)
-                ?values.memberIds.filter((memberId)=>memberId!==id)
-                :[...values.memberIds,id]
+                ? values.memberIds.filter((memberId) => memberId !== id)
+                : [...values.memberIds, id]
         );
     };
 
-    const handleSubmit=(event)=>{
+    const handleSubmit = (event) => {
         event.preventDefault();
 
-        const found=validate(values);
+        const found = validate(values);
         setErrors(found);
+        if (Object.keys(found).length) return;
 
-        if(Object.keys(found).length) return;
-
-        onSubmit(buildProject(values,editProject));
+        onSubmit(buildProject(values));
     };
 
-    return(
+    return (
         <Modal
             isOpen
             onClose={onClose}
-            title={editProject?"Edit project":"New project"}
+            title="New project"
             className="!max-w-[640px]"
             footer={
                 <>
@@ -212,7 +196,7 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         Cancel
                     </Button>
                     <Button type="submit" form="project-form">
-                        {editProject?"Update project":"Create project"}
+                        Create project
                     </Button>
                 </>
             }
@@ -223,7 +207,7 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                     label={<Required>Project name</Required>}
                     placeholder="e.g. Harbor Health patient portal"
                     value={values.name}
-                    onChange={(event)=>set("name",event.target.value)}
+                    onChange={(event) => set("name", event.target.value)}
                     error={errors.name}
                     autoFocus
                 />
@@ -234,7 +218,7 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                     rows={2}
                     placeholder="What does done look like?"
                     value={values.description}
-                    onChange={(event)=>set("description",event.target.value)}
+                    onChange={(event) => set("description", event.target.value)}
                 />
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -243,7 +227,7 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         label="Client or department"
                         placeholder="Internal"
                         value={values.client}
-                        onChange={(event)=>set("client",event.target.value)}
+                        onChange={(event) => set("client", event.target.value)}
                     />
 
                     <Dropdown
@@ -251,8 +235,8 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         label="Project lead"
                         placeholder={null}
                         value={values.leadId}
-                        onChange={(event)=>changeLead(event.target.value)}
-                        options={users.map((user)=>({label:user.name,value:user.id}))}
+                        onChange={(event) => changeLead(event.target.value)}
+                        options={users.map((user) => ({ label: user.name, value: user.id }))}
                     />
 
                     <Input
@@ -260,7 +244,7 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         name="project-start"
                         label={<Required>Start date</Required>}
                         value={values.startDate}
-                        onChange={(event)=>set("startDate",event.target.value)}
+                        onChange={(event) => set("startDate", event.target.value)}
                         error={errors.startDate}
                     />
 
@@ -270,7 +254,7 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         label={<Required>Deadline</Required>}
                         min={values.startDate}
                         value={values.dueDate}
-                        onChange={(event)=>set("dueDate",event.target.value)}
+                        onChange={(event) => set("dueDate", event.target.value)}
                         error={errors.dueDate}
                     />
                 </div>
@@ -280,14 +264,14 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         <Segmented
                             label="Priority"
                             value={values.priority}
-                            onChange={(value)=>set("priority",value)}
-                            options={PROJECT_PRIORITIES.map((value)=>({
+                            onChange={(value) => set("priority", value)}
+                            options={PROJECT_PRIORITIES.map((value) => ({
                                 value,
-                                icon:(
+                                icon: (
                                     <Flag
                                         size={13}
                                         strokeWidth={1.8}
-                                        style={{color:PRIORITY_STYLES[value]}}
+                                        style={{ color: PRIORITY_STYLES[value] }}
                                     />
                                 ),
                             }))}
@@ -298,13 +282,13 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                         <Segmented
                             label="Status"
                             value={values.status}
-                            onChange={(value)=>set("status",value)}
-                            options={PROJECT_STATUSES.map((value)=>({
+                            onChange={(value) => set("status", value)}
+                            options={PROJECT_STATUSES.map((value) => ({
                                 value,
-                                icon:(
+                                icon: (
                                     <span
                                         className="h-1.5 w-1.5 rounded-full"
-                                        style={{backgroundColor:STATUS_STYLES[value].dot}}
+                                        style={{ backgroundColor: STATUS_STYLES[value].dot }}
                                     />
                                 ),
                             }))}
@@ -314,29 +298,29 @@ const FormBody=({onClose,onSubmit,editProject})=>{
 
                 <Field label="Team members" required error={errors.memberIds}>
                     <div className="flex flex-wrap gap-2">
-                        {users.map((user)=>{
-                            const selected=values.memberIds.includes(user.id);
-                            const Icon=selected?Check:Plus;
+                        {users.map((user) => {
+                            const selected = values.memberIds.includes(user.id);
+                            const Icon = selected ? Check : Plus;
 
-                            return(
+                            return (
                                 <button
                                     key={user.id}
                                     type="button"
                                     aria-pressed={selected}
-                                    onClick={()=>toggleMember(user.id)}
+                                    onClick={() => toggleMember(user.id)}
                                     className={`flex h-8 items-center gap-1.5 rounded-full border py-0 pl-1 pr-2.5 text-[13px] transition-colors ${
                                         selected
-                                            ?"border-[var(--color-primary)]/40 bg-[var(--color-primary-light)] font-medium text-[var(--color-text-primary)]"
-                                            :"border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]"
+                                            ? "border-[var(--color-primary)]/40 bg-[var(--color-primary-light)] font-medium text-[var(--color-text-primary)]"
+                                            : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]"
                                     }`}
                                 >
                                     <Avatar
                                         name={user.name}
                                         size="xs"
-                                        style={{backgroundColor:user.avatarBg,color:user.avatarFg}}
+                                        style={{ backgroundColor: user.avatarBg, color: user.avatarFg }}
                                     />
                                     {user.firstName}
-                                    <Icon size={12} strokeWidth={2} aria-hidden="true"/>
+                                    <Icon size={12} strokeWidth={2} aria-hidden="true" />
                                 </button>
                             );
                         })}
@@ -346,20 +330,20 @@ const FormBody=({onClose,onSubmit,editProject})=>{
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Color">
                         <div role="radiogroup" aria-label="Project color" className="flex flex-wrap gap-2.5 p-1">
-                            {PROJECT_COLORS.map((color)=>{
-                                const selected=values.color===color;
+                            {PROJECT_COLORS.map((color) => {
+                                const selected = values.color === color;
 
-                                return(
+                                return (
                                     <button
                                         key={color}
                                         type="button"
                                         role="radio"
                                         aria-checked={selected}
                                         aria-label={color}
-                                        onClick={()=>set("color",color)}
-                                        style={{backgroundColor:color,"--tw-ring-color":color}}
+                                        onClick={() => set("color", color)}
+                                        style={{ backgroundColor: color, "--tw-ring-color": color }}
                                         className={`h-6 w-6 rounded-full ring-offset-2 transition-shadow ${
-                                            selected?"ring-2":"hover:ring-2 hover:ring-offset-1"
+                                            selected ? "ring-2" : "hover:ring-2 hover:ring-offset-1"
                                         }`}
                                     />
                                 );
@@ -369,25 +353,25 @@ const FormBody=({onClose,onSubmit,editProject})=>{
 
                     <Field label="Icon">
                         <div role="radiogroup" aria-label="Project icon" className="flex flex-wrap gap-2">
-                            {PROJECT_ICONS.map((key)=>{
-                                const Icon=ICONS[key];
-                                const selected=values.icon===key;
+                            {PROJECT_ICONS.map((key) => {
+                                const Icon = ICONS[key];
+                                const selected = values.icon === key;
 
-                                return(
+                                return (
                                     <button
                                         key={key}
                                         type="button"
                                         role="radio"
                                         aria-checked={selected}
                                         aria-label={key}
-                                        onClick={()=>set("icon",key)}
+                                        onClick={() => set("icon", key)}
                                         className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
                                             selected
-                                                ?"border-[var(--color-primary)]/40 bg-[var(--color-primary-light)] text-[var(--color-primary)]"
-                                                :"border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]"
+                                                ? "border-[var(--color-primary)]/40 bg-[var(--color-primary-light)] text-[var(--color-primary)]"
+                                                : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]"
                                         }`}
                                     >
-                                        <Icon size={15} strokeWidth={1.7}/>
+                                        <Icon size={15} strokeWidth={1.7} />
                                     </button>
                                 );
                             })}
@@ -399,14 +383,9 @@ const FormBody=({onClose,onSubmit,editProject})=>{
     );
 };
 
-const ProjectForm=({isOpen,onClose,onSubmit,editProject})=>
-    isOpen
-        ?<FormBody
-            key={editProject?.id||"new-project"}
-            onClose={onClose}
-            onSubmit={onSubmit}
-            editProject={editProject}
-        />
-        :null;
+/*  <ProjectForm isOpen onClose={...} onSubmit={(project) => ...} />
+    Re-mounts on every open, so the form always starts fresh. */
+const ProjectForm = ({ isOpen, onClose, onSubmit }) =>
+    isOpen ? <FormBody onClose={onClose} onSubmit={onSubmit} /> : null;
 
 export default ProjectForm;

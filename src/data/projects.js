@@ -1,4 +1,8 @@
 // Projects for the Projects page (grid, table, filters and the New project form).
+//
+// Dates are ISO strings. "Today" in this demo workspace is Tuesday, 13 Oct 2026,
+// so deadlines / "d left" / "d past due" are computed against DEMO_TODAY.
+// `taskTotal` / `taskDone` drive the "7 of 10 tasks" text and the % progress.
 
 export const DEMO_TODAY = "2026-10-13";
 

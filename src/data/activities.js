@@ -1,3 +1,6 @@
+// Activity feed. `ago` is the label shown on the project's Activity tab / Overview card,
+// `dashboardAgo` is the label shown in the dashboard's "Recent activity" card.
+// Render as: <b>{user}</b> {verb} <b>{target}</b> {suffix}
 
 export const activities = [
   {

@@ -1,4 +1,3 @@
-import React from "react";
 const Input=({label,error,helperText,className="",id,type="text",...props})=>{
     const inputId=id||props.name;
 

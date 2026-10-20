@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { tasks as seedTasks, subtasks as seedSubtasks, files as seedFiles, DEMO_TODAY, currentUserId } from "../data";
 import { loadJSON, saveJSON } from "../utils/storage";
 const KEY = "nexaspace.taskstore.v1";
+// unique id for anything we create (two clicks in the same millisecond must not clash)
+const uid = (prefix) => prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
 const start = { tasks: seedTasks, subtasks: seedSubtasks, files: seedFiles, comments: {}, history: {}, activity: [] };
 const fixSubCounts = (tasks, subs, id) => {
   const list = subs[id] || [];
@@ -24,10 +26,10 @@ export default function useTaskStore() {
       if (changes.priority && changes.priority !== task.priority) notes.push("set the priority to " + changes.priority);
       if (changes.assigneeId && changes.assigneeId !== task.assigneeId) notes.push("changed the assignee");
       const history = { ...old.history };
-      if (notes.length) history[id] = [...notes.map((n, i) => ({ id: "h-" + Date.now() + i, userId: currentUserId, text: n, ago: "just now" })), ...(history[id] || [])];
+      if (notes.length) history[id] = [...notes.map((n) => ({ id: uid("h"), userId: currentUserId, text: n, ago: "just now" })), ...(history[id] || [])];
       let activity = old.activity;
       if (changes.status && changes.status !== task.status) {
-        activity = [{ id: "act-" + Date.now(), userId: currentUserId, projectId: task.projectId, verb: "moved", target: task.title, suffix: "to " + changes.status, ago: "just now" }, ...activity];
+        activity = [{ id: uid("act"), userId: currentUserId, projectId: task.projectId, verb: "moved", target: task.title, suffix: "to " + changes.status, ago: "just now" }, ...activity];
       }
       return { ...old, tasks: old.tasks.map((t) => (t.id === id ? next : t)), history, activity };
     });
@@ -46,7 +48,7 @@ export default function useTaskStore() {
         subtasksDone: 0, subtasksTotal: 0, attachments: 0, comments: 0, blocked: false, dependsOn: null,
         completedAt: data.status === "Done" ? DEMO_TODAY : null,
       };
-      const note = { id: "act-" + Date.now(), userId: currentUserId, projectId: data.projectId, verb: "created", target: data.title, suffix: "", ago: "just now" };
+      const note = { id: uid("act"), userId: currentUserId, projectId: data.projectId, verb: "created", target: data.title, suffix: "", ago: "just now" };
       return { ...old, tasks: [...old.tasks, task], activity: [note, ...old.activity] };
     });
   };
@@ -59,7 +61,7 @@ export default function useTaskStore() {
   };
   const addSubtask = (taskId, title) => {
     setStore((old) => {
-      const subs = { ...old.subtasks, [taskId]: [...(old.subtasks[taskId] || []), { id: "st-" + Date.now(), title, completed: false }] };
+      const subs = { ...old.subtasks, [taskId]: [...(old.subtasks[taskId] || []), { id: uid("st"), title, completed: false }] };
       return { ...old, subtasks: subs, tasks: fixSubCounts(old.tasks, subs, taskId) };
     });
   };
@@ -71,14 +73,14 @@ export default function useTaskStore() {
   };
   const addComment = (taskId, text) => {
     setStore((old) => {
-      const c = { id: "c-" + Date.now(), userId: currentUserId, text, ago: "just now" };
+      const c = { id: uid("c"), userId: currentUserId, text, ago: "just now" };
       const comments = { ...old.comments, [taskId]: [...(old.comments[taskId] || []), c] };
       return { ...old, comments, tasks: old.tasks.map((t) => (t.id === taskId ? { ...t, comments: t.comments + 1 } : t)) };
     });
   };
   const addFile = (task, file) => {
     setStore((old) => {
-      const f = { id: "file-" + Date.now(), projectId: task.projectId, name: file.name, type: file.type, sizeMb: file.sizeMb, taskTitle: task.title, taskId: task.id, uploadedBy: currentUserId };
+      const f = { id: uid("file"), projectId: task.projectId, name: file.name, type: file.type, sizeMb: file.sizeMb, taskTitle: task.title, taskId: task.id, uploadedBy: currentUserId };
       const files = [...old.files, f];
       return { ...old, files, tasks: fixFileCount(old.tasks, files, task.id) };
     });

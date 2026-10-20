@@ -1,4 +1,5 @@
-import {React,useEffect} from "react";
+import {useEffect} from "react";
+import {X} from "lucide-react";
 
 const Drawer=({isOpen,onClose,title,children,side="right",className=""})=>{
     useEffect(()=>{
@@ -16,7 +17,7 @@ const Drawer=({isOpen,onClose,title,children,side="right",className=""})=>{
             <aside role="dialog" aria-modal="true" aria-label={title||"Drawer"} className={`absolute top-0 h-full w-full max-w-md overflow-y-auto bg-[var(--color-surface)] shadow-xl ${side==="left"?"left-0":"right-0"} ${className}`}>
                 <div className="flex items-center justify-between border-b border-[var(--color-border)] p-4">
                     <h2 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h2>
-                    <button type="button" onClick={onClose} aria-label="Close drawer" className="rounded-md p-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]">✕</button>
+                    <button type="button" onClick={onClose} aria-label="Close drawer" className="rounded-md p-2 text-[var(--color-text-secondary)] hover:bg-[var(--color-background)]"><X size={16} strokeWidth={1.8} /></button>
                 </div>
                 <div className="p-4">{children}</div>
             </aside>
