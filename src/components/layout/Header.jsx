@@ -1,29 +1,27 @@
-import {useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import {Search,Plus,Bell,ChevronDown,ChevronRight,X,Check,CheckSquare,FolderPlus,
-} from "lucide-react";
+import {useState} from "react";
+import { Link, useLocation} from "react-router-dom";
+import { Search, Plus, Bell, ChevronDown, ChevronRight, X, Check, CheckSquare, FolderPlus, Command } from "lucide-react";
 import Button from "../common/Button";
 import Input from "../common/Input";
 import Dropdown from "../common/Dropdown";
 import Avatar from "../common/Avatar";
 import Badge from "../common/Badge";
-import { loadJSON } from "../../utils/storage";
-import { projects as seedProjects } from "../../data";
+import {loadJSON} from "../../utils/storage";
+import {projects as seedProjects} from "../../data";
 
-// project name
-const getProjectName = (id) => {
-  const saved = loadJSON("nexaspace.projects.v1", null);
-  const list = Array.isArray(saved) ? saved : seedProjects;
-  return list.find((p) => p.id === id)?.name || "Project";
+// project name 
+const getProjectName=(id)=>{
+  const saved=loadJSON("nexaspace.projects.v1",null);
+  const list=Array.isArray(saved)?saved:seedProjects;
+  return list.find((p)=>p.id===id)?.name|| "Project";
 };
 
 function Header({title="Overview",onCreateTask,onCreateProject}) {
-  const { pathname } = useLocation();
-  const match = pathname.match(/^\/projects\/([^/]+)/);
-  const heading = match ? getProjectName(match[1]) : pathname === "/projects" ? "Projects" : title;
+  const {pathname} = useLocation();
+  const match=pathname.match(/^\/projects\/([^/]+)/);
+  const heading=match ? getProjectName(match[1]) : pathname === "/projects" ? "Projects" : title;
   const [searchOpen,setSearchOpen]=useState(false);
   const [searchValue,setSearchValue]=useState("");
-  const [notificationsOpen,setNotificationsOpen]=useState(false);
   const createOptions=[{label:"New task",
       description:"Add work to a project",
       icon:CheckSquare,
@@ -94,7 +92,7 @@ function Header({title="Overview",onCreateTask,onCreateProject}) {
                   Search projects, tasks, people
                 </span>
                 <kbd className="hidden shrink-0 rounded-[4px] border border-[var(--color-border)] bg-[var(--color-surface)] px-[5px] py-[1px] font-sans text-[10px] leading-[14px] text-[var(--color-text-muted)] lg:inline-block">
-                  ⌘K
+                  <span className="inline-flex items-center gap-[2px]"><Command size={10} strokeWidth={1.8} />K</span>
                 </kbd>
               </button>
             )}

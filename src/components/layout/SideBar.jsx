@@ -1,17 +1,16 @@
 import {useEffect,useRef,useState } from "react";
-import {LayoutDashboard,FolderKanban,CalendarDays,Users,
-        Mail,Plus,Settings,HelpCircle,ChevronsUpDown,X,Menu} from "lucide-react";
+import { LayoutGrid, FolderKanban, CalendarDays, Users, SquareCheck, ChartColumn, Inbox, Plus, Settings, HelpCircle, ChevronsUpDown, X, Menu, Command } from "lucide-react";
 import {NavLink} from "react-router-dom";
 import Avatar from "../common/Avatar";
 
 const mainNavigation = [
-  {name:"Overview",path:"/",icon:LayoutDashboard },
+  {name:"Overview",path:"/",icon:LayoutGrid },
   {name:"Projects",path:"/projects",icon:FolderKanban },
-  {name:"MyTasks",path:"/mytasks",icon:Mail,count:2},
+  {name:"My Tasks",path:"/mytasks",icon:SquareCheck,count:14},
   {name:"Calendar",path:"/calendar",icon:CalendarDays },
   {name:"Team",path:"/team",icon:Users },
-  {name:"Report & Analysis",path:"/calendar",icon:CalendarDays },
-  {name:"Inbox",path:"/inbox",icon:Mail,count:10},
+  {name:"Reports & Analytics",path:"/reports",icon:ChartColumn },
+  {name:"Inbox",path:"/inbox",icon:Inbox,count:4},
 ];
 
 const projects=[
@@ -59,7 +58,7 @@ const navClass = ({isActive})=>
 
 const projectClass = ({isActive})=>
   `group flex h-[32px] w-full min-w-0 items-center gap-[10px] rounded-[8px] border px-[10px] text-[13px] leading-[18px] transition-colors ${
-    isActive?"border-[var(--color-border)] bg-[var(--color-surface)] font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]"
+    isActive?"border-transparent bg-[var(--color-primary-light)] font-semibold text-[var(--color-primary)]"
       :"border-transparent font-normal text-[#1F2937] hover:bg-[var(--color-background)]"}`;
 
 function Sidebar(){
@@ -261,7 +260,7 @@ function Sidebar(){
               Help & shortcuts
             </span>
             <kbd className="hidden shrink-0 rounded-[4px] border border-[var(--color-border)] bg-[var(--color-background)] px-[5px] py-[2px] font-sans text-[10px] leading-[12px] text-[var(--color-text-muted)] sm:inline-block">
-              ⌘K
+              <span className="inline-flex items-center gap-[2px]"><Command size={10} strokeWidth={1.8} />K</span>
             </kbd>
           </NavLink>
 

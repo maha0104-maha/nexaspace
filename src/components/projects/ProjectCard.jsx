@@ -34,7 +34,9 @@ import {
     PRIORITY_STYLES,
 } from "../../data";
 
-
+/* -------------------------------------------------------------------------- */
+/*                         small project-only pieces                          */
+/* -------------------------------------------------------------------------- */
 
 export const ICONS = {
     rocket: Rocket,
@@ -156,9 +158,11 @@ const CardMenu = ({ name, onEdit, onDuplicate, onArchive }) => (
     </div>
 );
 
+/* -------------------------------------------------------------------------- */
+/*                                 single card                                */
+/* -------------------------------------------------------------------------- */
 
-
-
+/*  <ProjectCard project={project} onOpen onEdit onDuplicate onArchive />  */
 export const ProjectCard = ({ project, onOpen, onEdit, onDuplicate, onArchive }) => {
     const progress = getProgress(project);
 
@@ -233,7 +237,9 @@ export const ProjectCard = ({ project, onOpen, onEdit, onDuplicate, onArchive })
     );
 };
 
-
+/* -------------------------------------------------------------------------- */
+/*                                 table view                                 */
+/* -------------------------------------------------------------------------- */
 
 const tableGrid =
     "grid grid-cols-[252px_162px_122px_102px_152px_122px_minmax(0,1fr)] items-center";
@@ -312,9 +318,11 @@ export const ProjectsTable = ({ list, onOpen }) => (
     </Card>
 );
 
+/* -------------------------------------------------------------------------- */
+/*                         list: grid / table / empty                         */
+/* -------------------------------------------------------------------------- */
 
-
-
+/*  <ProjectCards projectList={...} view="grid" | "list" onOpen onClear ... />  */
 const ProjectCards = ({
     projectList = [],
     view = "grid",

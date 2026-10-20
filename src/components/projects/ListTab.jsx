@@ -1,8 +1,8 @@
 import { Flag } from "lucide-react";
-import Avatar from "../../common/Avatar";
-import EmptyState from "../../common/EmptyState";
-import { TASK_STATUSES, STATUS_META, LABEL_STYLES, PRIORITY_STYLES, getUserById } from "../../../data";
-import { getDueLabel, DUE_COLORS } from "../../../utils/taskUtils";
+import Avatar from "../common/Avatar";
+import EmptyState from "../common/EmptyState";
+import { TASK_STATUSES, STATUS_META, LABEL_STYLES, PRIORITY_STYLES, getUserById } from "../../data";
+import { getDueLabel, DUE_COLORS } from "../../utils/taskUtils";
 
 // same status icon as the board (we can move it to common later)
 function StatusIcon({ status }) {

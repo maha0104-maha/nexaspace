@@ -1,4 +1,3 @@
-import React from "react";
 const Button=({children,variant="primary",size="md",type="button",disabled=false,loading=false,className="",onClick,...props})=>{
     const baseStyles="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 

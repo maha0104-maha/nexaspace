@@ -10,7 +10,7 @@ import { getUserById, getDeadlineNote, formatShortDate, formatLongDate, PROJECT_
 const menuBox = "absolute z-30 w-[200px] rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface)] p-1 shadow-lg";
 const item = "w-full !justify-start";
 
-// small progress ring 
+// small progress ring (40 % in the reference)
 function Ring({ value, color }) {
   const size = 44;
   const stroke = 4;

@@ -1,6 +1,6 @@
-import { cloneElement, useEffect, useRef, useState } from 'react';
+import {cloneElement, useEffect, useRef,useState} from 'react';
 
-const Dropdown = ({
+const Dropdown=({
   label,
   options = [],
   value,
@@ -14,14 +14,14 @@ const Dropdown = ({
   menuClassName = '',
   ...props
 }) => {
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [open, setOpen]=useState(false);
+  const dropdownRef=useRef(null);
 
   useEffect(() => {
-    if (!open || mode !== 'menu') return;
+    if (!open||mode!=='menu') return;
 
-    const handlePointerDown = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handlePointerDown=(event)=>{
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)){
         setOpen(false);
       }
     };

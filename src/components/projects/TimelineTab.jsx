@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import Avatar from "../../common/Avatar";
-import EmptyState from "../../common/EmptyState";
-import { loadJSON, saveJSON } from "../../../utils/storage";
-import { dayDiff, addDaysIso, mondayBefore, toIso } from "../../../utils/taskUtils";
-import { STATUS_META, DEMO_TODAY, formatShortDate, getUserById } from "../../../data";
+import Avatar from "../common/Avatar";
+import EmptyState from "../common/EmptyState";
+import { loadJSON, saveJSON } from "../../utils/storage";
+import { dayDiff, addDaysIso, mondayBefore, toIso } from "../../utils/taskUtils";
+import { STATUS_META, DEMO_TODAY, formatShortDate, getUserById } from "../../data";
 
 const SCALES = { week: 36, month: 14, quarter: 6 };
 const ZOOMS = [{ value: "week", label: "Week" }, { value: "month", label: "Month" }, { value: "quarter", label: "Quarter" }];
@@ -28,7 +28,7 @@ function TimelineTab({ projectId, project, tasks, milestones }) {
   const [zoom, setZoom] = useState(() => loadJSON(key, "month"));
   useEffect(() => {
     saveJSON(key, zoom);
-  }, [zoom]);
+  }, [key, zoom]);
 
   if (tasks.length === 0) return <EmptyState title="Nothing to plot" description="Tasks with dates will show up here." />;
 

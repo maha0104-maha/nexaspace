@@ -1,6 +1,6 @@
-import Avatar from "../../common/Avatar";
-import EmptyState from "../../common/EmptyState";
-import { getUserById } from "../../../data";
+import Avatar from "../common/Avatar";
+import EmptyState from "../common/EmptyState";
+import { getUserById } from "../../data";
 
 function ActivityTab({ activities }) {
   if (activities.length === 0) return <EmptyState title="No activity yet" description="Changes to this project will be listed here." />;

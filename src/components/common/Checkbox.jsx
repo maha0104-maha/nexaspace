@@ -1,4 +1,3 @@
-import React from "react";
 const Checkbox=({id,name,checked=false,onChange,label,description,disabled=false,className="",...props})=>{
     const inputId=id||name||`checkbox-${label?.toLowerCase().replace(/\s+/g,"-")}`;
 

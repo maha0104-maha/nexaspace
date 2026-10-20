@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { Plus, Hand, User, Flag, Tag, ArrowUpDown, ChevronDown, Calendar, Paperclip, MessageCircle, ListChecks, Ban, GitBranch } from "lucide-react";
-import SearchInput from "../../common/SearchInput";
-import Avatar from "../../common/Avatar";
-import { loadJSON, saveJSON } from "../../../utils/storage";
-import { getDueLabel, sortTasks, DUE_COLORS } from "../../../utils/taskUtils";
-import { TASK_STATUSES, STATUS_META, PROJECT_PRIORITIES, TASK_LABELS, BOARD_SORTS, LABEL_STYLES, PRIORITY_STYLES, getUserById } from "../../../data";
+import { Plus, Hand, User, Flag, Tag, ArrowUpDown, ChevronDown, Calendar, Paperclip, MessageCircle, ListChecks, Ban, GitBranch, ArrowLeft, ArrowRight } from "lucide-react";
+import SearchInput from "../common/SearchInput";
+import Avatar from "../common/Avatar";
+import { loadJSON, saveJSON } from "../../utils/storage";
+import { getDueLabel, sortTasks, DUE_COLORS } from "../../utils/taskUtils";
+import { TASK_STATUSES, STATUS_META, PROJECT_PRIORITIES, TASK_LABELS, BOARD_SORTS, LABEL_STYLES, PRIORITY_STYLES, getUserById } from "../../data";
 
 const START = { search: "", assignee: "", priority: "", label: "", sort: "Manual order" };
 
-// dropdown with an icon on the left 
+// dropdown with an icon on the left (move to common later)
 function IconSelect({ icon: Icon, value, onChange, options, placeholder, label, width }) {
   return (
     <div className="relative shrink-0" style={{ width }}>
@@ -35,19 +35,20 @@ function StatusIcon({ status }) {
   );
 }
 
-function TaskCard({ task, onMove }) {
+function TaskCard({ task, onMove, onOpen }) {
   const done = task.status === "Done";
   const due = getDueLabel(task);
   const user = getUserById(task.assigneeId);
   const label = LABEL_STYLES[task.label];
 
   const keyDown = (e) => {
+    if (e.key === "Enter" && onOpen) onOpen(task);
     if (e.key === "ArrowLeft") { e.preventDefault(); onMove(task, -1); }
     if (e.key === "ArrowRight") { e.preventDefault(); onMove(task, 1); }
   };
 
   return (
-    <div id={"card-" + task.id} tabIndex={0} draggable onKeyDown={keyDown}
+    <div id={"card-" + task.id} tabIndex={0} draggable onKeyDown={keyDown} onClick={() => onOpen && onOpen(task)}
       onDragStart={(e) => { e.dataTransfer.setData("text/plain", task.id); e.dataTransfer.effectAllowed = "move"; }}
       className="cursor-grab rounded-lg border border-[var(--color-border)] bg-white p-3 shadow-sm outline-none hover:border-[#C9CDD6] focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40">
       <div className="flex items-center justify-between">
@@ -79,13 +80,13 @@ function TaskCard({ task, onMove }) {
   );
 }
 
-function BoardTab({ projectId, tasks, members, onMove }) {
+function BoardTab({ projectId, tasks, members, onMove, onOpen, onAdd }) {
   const key = "nexaspace.board." + projectId;
   const [f, setF] = useState(() => loadJSON(key, START));
   const [over, setOver] = useState("");
   useEffect(() => {
     saveJSON(key, f);
-  }, [f]);
+  }, [key, f]);
 
   const change = (name) => (e) => setF({ ...f, [name]: e.target.value });
   const opts = (list) => list.map((x) => ({ label: x, value: x }));
@@ -129,8 +130,8 @@ function BoardTab({ projectId, tasks, members, onMove }) {
       </div>
       <p className="mt-2.5 flex items-center gap-1.5 text-xs text-[#6B7280]">
         <Hand size={12} />Drag cards, or focus one and press
-        <kbd className="rounded border border-[var(--color-border)] px-1.5">←</kbd>
-        <kbd className="rounded border border-[var(--color-border)] px-1.5">→</kbd>
+        <kbd className="flex h-5 w-5 items-center justify-center rounded border border-[var(--color-border)]"><ArrowLeft size={11} /></kbd>
+        <kbd className="flex h-5 w-5 items-center justify-center rounded border border-[var(--color-border)]"><ArrowRight size={11} /></kbd>
       </p>
 
       <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
@@ -146,10 +147,10 @@ function BoardTab({ projectId, tasks, members, onMove }) {
                 <StatusIcon status={status} />
                 <span className="text-[13px] font-semibold">{status}</span>
                 <span className="rounded-full bg-white px-2 text-xs text-[#4B5563]">{list.length}</span>
-                <button type="button" aria-label={"Add task to " + status} className="ml-auto text-[#6B7280]"><Plus size={15} /></button>
+                <button type="button" aria-label={"Add task to " + status} onClick={() => onAdd && onAdd(status)} className="ml-auto text-[#6B7280] hover:text-[var(--color-primary)]"><Plus size={15} /></button>
               </div>
               <div className="flex flex-col gap-3">
-                {list.map((t) => <TaskCard key={t.id} task={t} onMove={moveBy} />)}
+                {list.map((t) => <TaskCard key={t.id} task={t} onMove={moveBy} onOpen={onOpen} />)}
               </div>
             </div>
           );

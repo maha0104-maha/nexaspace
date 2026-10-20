@@ -1,4 +1,3 @@
-import React from "react";
 const Card=({title,description,action,children,footer,className = "",headerClassName = "",
   contentClassName = "",
 })=>{

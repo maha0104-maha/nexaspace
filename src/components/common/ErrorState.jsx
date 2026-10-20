@@ -1,4 +1,3 @@
-import React from "react";
 
 const ErrorState=({title="Something went wrong",message="Please try again.",onRetry})=>{
     return(
