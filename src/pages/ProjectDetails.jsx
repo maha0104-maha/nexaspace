@@ -15,10 +15,15 @@ import CreateTaskModal from "../components/projects/CreateTaskModal";
 import ProjectSettingsModal from "../components/projects/ProjectSettingsModal";
 import useTaskStore from "../hooks/useTaskStore";
 import { loadJSON, saveJSON } from "../utils/storage";
-import { projects as seedProjects, getUserById, getMilestonesByProject, getActivitiesByProject } from "../data";
+import { notifyDataChanged } from "../utils/liveData";
+import { projects as seedProjects, getUserById, getMilestonesByProject, getActivitiesByProject, formatShortDate } from "../data";
 
 const KEY = "nexaspace.projects.v1";
 // same list the Projects page uses
+const saveProjects = (list) => {
+  saveJSON(KEY, list);
+  notifyDataChanged();
+};
 const getProjects = () => {
   const saved = loadJSON(KEY, null);
   return Array.isArray(saved) ? saved : seedProjects;
@@ -52,7 +57,7 @@ function Details({ first }) {
     const list = getProjects();
     const saved = list.find((p) => p.id === project.id);
     if (saved && (saved.taskTotal !== tasks.length || saved.taskDone !== done)) {
-      saveJSON(KEY, list.map((p) => (p.id === project.id ? { ...p, taskTotal: tasks.length, taskDone: done } : p)));
+      saveProjects(list.map((p) => (p.id === project.id ? { ...p, taskTotal: tasks.length, taskDone: done } : p)));
     }
   }, [project.id, tasks.length, done]);
 
@@ -64,22 +69,34 @@ function Details({ first }) {
 
   // save any change to this project (status, settings...)
   const changeProject = (changes) => {
-    saveJSON(KEY, getProjects().map((p) => (p.id === project.id ? { ...p, ...changes } : p)));
+    saveProjects(getProjects().map((p) => (p.id === project.id ? { ...p, ...changes } : p)));
     setProject({ ...project, ...changes });
   };
-  const changeStatus = (status) => changeProject({ status });
+  const changeStatus = (status) => {
+    changeProject({ status });
+    store.logActivity({ projectId: project.id, verb: "changed the status of", target: project.name, suffix: "to " + status });
+  };
+  // settings can change the deadline, which is worth showing in the activity feed
+  const saveSettings = (data) => {
+    changeProject(data);
+    if (data.dueDate !== project.dueDate) {
+      store.logActivity({ projectId: project.id, verb: "changed the deadline of", target: data.name, suffix: "to " + formatShortDate(data.dueDate) });
+    }
+    setSettings(false);
+  };
   const addTask = (data) => {
     store.addTask(data);
     setCreate({ open: false, status: "To Do" });
   };
   const duplicate = () => {
     const copy = { ...project, id: project.id + "-copy-" + Date.now(), name: project.name + " (copy)" };
-    saveJSON(KEY, [...getProjects(), copy]);
+    saveProjects([...getProjects(), copy]);
+    store.logActivity({ projectId: copy.id, verb: "duplicated", target: project.name });
     navigate("/projects/" + copy.id);
   };
   const remove = (ask) => {
     if (ask && !window.confirm("Delete this project? This can't be undone.")) return;
-    saveJSON(KEY, getProjects().filter((p) => p.id !== project.id));
+    saveProjects(getProjects().filter((p) => p.id !== project.id));
     navigate("/projects");
   };
 
@@ -104,7 +121,7 @@ function Details({ first }) {
       <CreateTaskModal isOpen={create.open} status={create.status} projectId={project.id} projectList={getProjects()}
         onClose={() => setCreate({ open: false, status: "To Do" })} onCreate={addTask} />
       <ProjectSettingsModal isOpen={settings} project={project} onClose={() => setSettings(false)}
-        onSave={(data) => { changeProject(data); setSettings(false); }} />
+        onSave={saveSettings} />
     </div>
   );
 }

@@ -9,9 +9,11 @@ import ProjectFilters, {
 } from "../components/projects/ProjectFilters";
 import ProjectCards from "../components/projects/ProjectCard";
 import ProjectForm from "../components/projects/ProjectForm";
+import useTaskStore from "../hooks/useTaskStore";
 
 function Projects() {
     const navigate = useNavigate();
+    const store = useTaskStore();
     const [formOpen, setFormOpen] = useState(false);
 
     const {
@@ -29,6 +31,7 @@ function Projects() {
 
     const handleCreate = (project) => {
         addProject(project);
+        store.logActivity({ projectId: project.id, verb: "created the project", target: project.name });
         clearFilters(); // make sure the new project isn't hidden by an active filter
         setFormOpen(false);
     };

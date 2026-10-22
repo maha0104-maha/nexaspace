@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { tasks as seedTasks, subtasks as seedSubtasks, files as seedFiles, DEMO_TODAY, currentUserId } from "../data";
 import { loadJSON, saveJSON } from "../utils/storage";
+import { notifyDataChanged } from "../utils/liveData";
 const KEY = "nexaspace.taskstore.v1";
 // unique id for anything we create (two clicks in the same millisecond must not clash)
 const uid = (prefix) => prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
@@ -14,6 +15,7 @@ export default function useTaskStore() {
   const [store, setStore] = useState(() => loadJSON(KEY, start));
   useEffect(() => {
     saveJSON(KEY, store);
+    notifyDataChanged();
   }, [store]);
   const updateTask = (id, changes) => {
     setStore((old) => {
@@ -29,7 +31,7 @@ export default function useTaskStore() {
       if (notes.length) history[id] = [...notes.map((n) => ({ id: uid("h"), userId: currentUserId, text: n, ago: "just now" })), ...(history[id] || [])];
       let activity = old.activity;
       if (changes.status && changes.status !== task.status) {
-        activity = [{ id: uid("act"), userId: currentUserId, projectId: task.projectId, verb: "moved", target: task.title, suffix: "to " + changes.status, ago: "just now" }, ...activity];
+        activity = [{ id: uid("act"), userId: currentUserId, projectId: task.projectId, verb: "moved", target: task.title, suffix: "to " + changes.status, ago: "just now", at: Date.now() }, ...activity];
       }
       return { ...old, tasks: old.tasks.map((t) => (t.id === id ? next : t)), history, activity };
     });
@@ -48,9 +50,13 @@ export default function useTaskStore() {
         subtasksDone: 0, subtasksTotal: 0, attachments: 0, comments: 0, blocked: false, dependsOn: null,
         completedAt: data.status === "Done" ? DEMO_TODAY : null,
       };
-      const note = { id: uid("act"), userId: currentUserId, projectId: data.projectId, verb: "created", target: data.title, suffix: "", ago: "just now" };
+      const note = { id: uid("act"), userId: currentUserId, projectId: data.projectId, verb: "created", target: data.title, suffix: "", ago: "just now", at: Date.now() };
       return { ...old, tasks: [...old.tasks, task], activity: [note, ...old.activity] };
     });
+  };
+  // things that are not about one task (a project was created, its status changed...)
+  const logActivity = (entry) => {
+    setStore((old) => ({ ...old, activity: [{ id: uid("act"), userId: currentUserId, ago: "just now", at: Date.now(), suffix: "", ...entry }, ...old.activity] }));
   };
   const deleteTask = (id) => setStore((old) => ({ ...old, tasks: old.tasks.filter((t) => t.id !== id) }));
   const toggleSubtask = (taskId, subId) => {
@@ -91,5 +97,5 @@ export default function useTaskStore() {
       return { ...old, files, tasks: fixFileCount(old.tasks, files, file.taskId) };
     });
   };
-  return { ...store, updateTask, addTask, deleteTask, toggleSubtask, addSubtask, removeSubtask, addComment, addFile, removeFile };
+  return { ...store, updateTask, addTask, logActivity, deleteTask, toggleSubtask, addSubtask, removeSubtask, addComment, addFile, removeFile };
 }

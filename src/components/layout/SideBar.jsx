@@ -1,5 +1,7 @@
 import {useEffect,useRef,useState } from "react";
 import { LayoutGrid, FolderKanban, CalendarDays, Users, SquareCheck, ChartColumn, Inbox, Plus, Settings, HelpCircle, ChevronsUpDown, X, Menu, Command } from "lucide-react";
+import useLiveData from "../../hooks/useLiveData";
+import { currentUserId } from "../../data";
 import {NavLink} from "react-router-dom";
 import Avatar from "../common/Avatar";
 
@@ -13,44 +15,6 @@ const mainNavigation = [
   {name:"Inbox",path:"/inbox",icon:Inbox,count:4},
 ];
 
-const projects=[
-  {name:"Clinic Website Redesign",
-    path:"/projects/clinic",
-    color:"#0F8F6B",
-    progress:"50%",
-  },
-  {
-    name: "Atlas SaaS Dashboard",
-    path: "/projects/atlas",
-    color: "#5457C9",
-    progress: "40%",
-  },
-  {
-    name: "Ember Ordering App",
-    path: "/projects/ember",
-    color: "#B4531E",
-    progress: "70%",
-  },
-  {
-    name: "Northwind Marketing Site",
-    path: "/projects/northwind",
-    color: "#B8447F",
-    progress: "20%",
-  },
-  {
-    name: "Loom & Co. Storefront",
-    path: "/projects/loom",
-    color: "#3F8A2E",
-    progress: "10%",
-  },
-  {
-    name: "Internal Analytics Hub",
-    path: "/projects/analytics",
-    color: "#0A84B8",
-    progress: "40%",
-  },
-];
-
 const navClass = ({isActive})=>
   `group flex h-[36px] w-full min-w-0 items-center gap-[12px] rounded-[8px] border px-[11px] text-[13.5px] leading-[18px] transition-colors ${
     isActive?"border-[var(--color-border)] bg-[var(--color-surface)] font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] [&_svg]:text-[var(--color-primary)]"
@@ -62,6 +26,21 @@ const projectClass = ({isActive})=>
       :"border-transparent font-normal text-[#1F2937] hover:bg-[var(--color-background)]"}`;
 
 function Sidebar(){
+  // projects and tasks as they are right now (updates when anything is saved)
+  const { projects: savedProjects, tasks: savedTasks } = useLiveData();
+
+  const projects = savedProjects.map((project) => {
+    const list = savedTasks.filter((task) => task.projectId === project.id);
+    const done = list.filter((task) => task.status === "Done").length;
+    return {
+      name: project.name,
+      path: "/projects/" + project.id,
+      color: project.color || project.iconColor,
+      progress: (list.length ? Math.round((done / list.length) * 100) : 0) + "%",
+    };
+  });
+  const myOpenTasks = savedTasks.filter((task) => task.assigneeId === currentUserId && task.status !== "Done").length;
+
   const [mobileOpen, setMobileOpen]=useState(false);
   const [workspaceOpen, setWorkspaceOpen]=useState(false);
   const workspaceRef = useRef(null);
@@ -181,6 +160,7 @@ function Sidebar(){
           <div className="space-y-[2px]">
             {mainNavigation.map((item)=>{
               const Icon = item.icon;
+              const count = item.path === "/mytasks" ? myOpenTasks : item.count;
               return (
                 <NavLink
                   key={item.path}
@@ -195,9 +175,9 @@ function Sidebar(){
                   <span className="min-w-0 flex-1 truncate">
                     {item.name}
                   </span>
-                  {item.count !== undefined && (
+                  {count !== undefined && count > 0 && (
                     <span className="flex h-[20px] min-w-[22px] shrink-0 items-center justify-center rounded-full bg-[#E9EBEF] px-[6px] text-[11px] font-medium leading-none text-[#374151]">
-                      {item.count}
+                      {count}
                     </span>
                   )}
                 </NavLink>
