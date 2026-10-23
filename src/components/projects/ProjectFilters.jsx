@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LayoutGrid, Table2 } from "lucide-react";
 
 import Button from "../common/Button";
+import { notifyDataChanged } from "../../utils/liveData";
 import Dropdown from "../common/Dropdown";
 import SearchInput from "../common/SearchInput";
 
@@ -105,6 +106,7 @@ export const useProjects = (initial = seedProjects) => {
     useEffect(() => {
         try {
             localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+            notifyDataChanged();
         } catch {
             /* storage full or unavailable - ignore */
         }

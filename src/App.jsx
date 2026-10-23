@@ -4,6 +4,7 @@ import Sidebar from "./components/layout/SideBar";
 import Header from "./components/layout/Header";
 
 
+import Overview from "./pages/Overview";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 
@@ -19,6 +20,7 @@ function App() {
                     <main>
                         <Routes>
                            
+                            <Route path="/" element={<Overview />} />
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/projects/:projectId" element={<ProjectDetails />} />
                         </Routes>

@@ -31,3 +31,14 @@ export const sortTasks = (list, how) => {
   if (how === "Title") copy.sort((a, b) => a.title.localeCompare(b.title));
   return copy;
 };
+
+// "just now", "5m ago", "3h ago"... for entries saved with a time, otherwise the text they came with
+export const timeAgo = (item) => {
+  if (!item.at) return item.ago || "";
+  const mins = Math.floor((Date.now() - item.at) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m ago";
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + "h ago";
+  return Math.floor(hours / 24) + "d ago";
+};
