@@ -1,9 +1,7 @@
 import { useState } from "react";
-
 import useTaskStore from "../hooks/useTaskStore";
 import { getLiveProjects } from "../utils/liveData";
 import { RANGES, buildDashboard } from "../components/dashboard/dashboardData";
-
 import OverviewKpiSection from "../components/dashboard/OverviewKpiSection";
 import TaskCompletionCard from "../components/dashboard/TaskCompletionCard";
 import TasksByStatusCard from "../components/dashboard/TasksByStatusCard";
@@ -14,7 +12,7 @@ import RecentActivityCard from "../components/dashboard/RecentActivityCard";
 function Overview() {
     const store = useTaskStore();
     const [range, setRange] = useState("8w");
-    // tasks ticked off on this screen stay in the list (crossed out) until you leave
+    
     const [justDone, setJustDone] = useState([]);
 
     // projects are saved in localStorage, tasks and activity come from the task store
