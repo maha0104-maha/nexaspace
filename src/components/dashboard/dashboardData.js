@@ -27,9 +27,6 @@ import {
 } from "../../data";
 import { addDaysIso, mondayBefore, timeAgo } from "../../utils/taskUtils";
 
-/* ------------------------------------------------------------------ */
-/* things that never change (colours, labels, icons)                   */
-/* ------------------------------------------------------------------ */
 
 export const RANGES = [
     { id: "14d", label: "14 days" },
@@ -64,7 +61,7 @@ export const TASK_STATUS_STYLES = {
     Done: { bg: "#E3F6EC", fg: "#0B7A4B", icon: CircleCheck },
 };
 
-// the projects store an icon name, this turns it into the real icon
+// the projects store an icon name
 const PROJECT_ICONS = {
     clinic: BriefcaseMedical,
     chart: TrendingUp,
@@ -84,7 +81,7 @@ const STATUS_COLORS = {
     Done: "#12A06C",
 };
 
-// the data calls it "On Track", the dashboard shows "On track"
+
 const PROJECT_STATUS_LABEL = {
     "On Track": "On track",
     "At Risk": "At risk",
@@ -100,9 +97,7 @@ const BAR_COLORS = {
 const PRIORITY_RANK = { Urgent: 0, High: 1, Medium: 2, Low: 3 };
 const GRAY = "#E5E7EB";
 
-/* ------------------------------------------------------------------ */
-/* small helpers                                                       */
-/* ------------------------------------------------------------------ */
+
 
 const isOpen = (task) => task.status !== "Done";
 const myOpenTasks = (tasks) =>
@@ -114,7 +109,7 @@ const nonEmpty = (segments) => {
     return kept.length ? kept : [{ value: 1, color: GRAY }];
 };
 
-// how many tasks are due between Monday and Sunday of the current week
+// how many tasks are due between Monday and Sunday k
 const dueThisWeek = (tasks) => {
     const monday = mondayBefore(DEMO_TODAY);
     const sunday = addDaysIso(monday, 6);
@@ -126,9 +121,7 @@ const dueThisWeek = (tasks) => {
 const countBetween = (tasks, field, from, to) =>
     tasks.filter((task) => task[field] && task[field] >= from && task[field] < to).length;
 
-/* ------------------------------------------------------------------ */
-/* greeting                                                            */
-/* ------------------------------------------------------------------ */
+
 
 export const getGreeting = () => {
     const hour = new Date().getHours();
@@ -186,9 +179,7 @@ export const buildCompletion = (tasks, rangeId) => {
     return rows;
 };
 
-/* ------------------------------------------------------------------ */
-/* tasks by status                                                     */
-/* ------------------------------------------------------------------ */
+
 
 export const buildStatusBreakdown = (tasks) =>
     Object.keys(STATUS_COLORS).map((label) => ({
@@ -197,9 +188,6 @@ export const buildStatusBreakdown = (tasks) =>
         color: STATUS_COLORS[label],
     }));
 
-/* ------------------------------------------------------------------ */
-/* project health rows                                                 */
-/* ------------------------------------------------------------------ */
 
 export const buildProjectRows = (projects, tasks) =>
     projects.map((project) => {
@@ -232,9 +220,7 @@ export const buildProjectRows = (projects, tasks) =>
         };
     });
 
-/* ------------------------------------------------------------------ */
-/* my priority tasks                                                   */
-/* ------------------------------------------------------------------ */
+
 
 const dueText = (days) => {
     if (days === -1) return "Yesterday";
@@ -244,8 +230,7 @@ const dueText = (days) => {
     return null; // far away, the caller shows the date
 };
 
-// justDone = tasks ticked off on this screen, we keep them in the list (crossed out)
-// so the row doesn't jump away the moment you click it
+
 export const buildPriorityTasks = (tasks, projects, justDone = []) =>
     tasks
         .filter(
@@ -280,9 +265,8 @@ export const buildPriorityTasks = (tasks, projects, justDone = []) =>
             };
         });
 
-/* ------------------------------------------------------------------ */
-/* recent activity                                                     */
-/* ------------------------------------------------------------------ */
+/* recent activity   */
+
 
 export const buildActivity = (liveActivity) => {
     const starter = dashboardActivityIds
@@ -297,7 +281,7 @@ export const buildActivity = (liveActivity) => {
         let verb = item.verb;
         let suffix = item.suffix;
 
-        // "moved X to Done" reads better as "completed X"
+      
         if (verb === "moved" && suffix === "to Done") {
             verb = "completed";
             suffix = "";
@@ -315,12 +299,7 @@ export const buildActivity = (liveActivity) => {
     });
 };
 
-/* ------------------------------------------------------------------ */
-/* the six cards at the top                                            */
-/* ------------------------------------------------------------------ */
 
-// work out how much of the next two weeks is already booked
-// one person can do about 6 focused hours a day, 10 working days in two weeks
 const HOURS_PER_PERSON = 60;
 
 export const buildKpis = ({ projects, tasks, range, completion }) => {
@@ -452,9 +431,7 @@ export const buildKpis = ({ projects, tasks, range, completion }) => {
     ];
 };
 
-/* ------------------------------------------------------------------ */
-/* everything the Overview page needs, in one call                     */
-/* ------------------------------------------------------------------ */
+
 
 export const buildDashboard = ({ projects, tasks, activity, range, justDone }) => {
     const completion = buildCompletion(tasks, range);

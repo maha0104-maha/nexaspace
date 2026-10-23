@@ -1,9 +1,9 @@
-import { CardHeading, cardClass } from "./DashboardShared";
+import {CardHeading,cardClass} from "./DashboardShared";
 
 // the chart has 4 steps, pick a nice step size so the tallest bar always fits
 const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500];
 
-const getScale = (data) => {
+const getScale=(data) => {
     let highest = 0;
     data.forEach((item) => {
         highest = Math.max(highest, item.completed, item.created);
