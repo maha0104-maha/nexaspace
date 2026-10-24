@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState } from "react";
 import { LayoutGrid, FolderKanban, CalendarDays, Users, SquareCheck, ChartColumn, Inbox, Plus, Settings, HelpCircle, ChevronsUpDown, X, Menu, Command } from "lucide-react";
 import useLiveData from "../../hooks/useLiveData";
+import { OPEN_PALETTE } from "../../utils/paletteSearch";
 import { currentUserId } from "../../data";
 import {NavLink} from "react-router-dom";
 import Avatar from "../common/Avatar";
@@ -230,8 +231,12 @@ function Sidebar(){
               Workspace settings
             </span>
           </NavLink>
-          <NavLink to="/help" onClick={closeMobileMenu}
-            className={`${navClass({isActive:false})} mt-[2px]`}>
+          <button type="button"
+            onClick={()=>{
+              closeMobileMenu();
+              window.dispatchEvent(new Event(OPEN_PALETTE));
+            }}
+            className={`${navClass({isActive:false})} mt-[2px] text-left`}>
             <HelpCircle
               size={16}
               strokeWidth={1.8}
@@ -242,7 +247,7 @@ function Sidebar(){
             <kbd className="hidden shrink-0 rounded-[4px] border border-[var(--color-border)] bg-[var(--color-background)] px-[5px] py-[2px] font-sans text-[10px] leading-[12px] text-[var(--color-text-muted)] sm:inline-block">
               <span className="inline-flex items-center gap-[2px]"><Command size={10} strokeWidth={1.8} />K</span>
             </kbd>
-          </NavLink>
+          </button>
 
           {/* logged user */}
           <div className="mt-[8px] border-t border-[var(--color-border)] pt-[8px]">
