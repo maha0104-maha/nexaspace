@@ -1,11 +1,8 @@
-import { useState, useEffect } from "react";
-import { tasks as seedTasks, subtasks as seedSubtasks, files as seedFiles, DEMO_TODAY, currentUserId } from "../data";
+import { useState, useEffect, useRef } from "react";
+import { DEMO_TODAY, currentUserId } from "../data";
 import { loadJSON, saveJSON } from "../utils/storage";
-import { notifyDataChanged } from "../utils/liveData";
-const KEY = "nexaspace.taskstore.v1";
-// unique id for anything we create (two clicks in the same millisecond must not clash)
-const uid = (prefix) => prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
-const start = { tasks: seedTasks, subtasks: seedSubtasks, files: seedFiles, comments: {}, history: {}, activity: [] };
+import { DATA_EVENT, notifyDataChanged } from "../utils/liveData";
+import { STORE_KEY as KEY, uid, startStore as start, withNewTask, withActivity } from "../utils/taskStore";
 const fixSubCounts = (tasks, subs, id) => {
   const list = subs[id] || [];
   return tasks.map((t) => (t.id === id ? { ...t, subtasksTotal: list.length, subtasksDone: list.filter((s) => s.completed).length } : t));
@@ -13,10 +10,24 @@ const fixSubCounts = (tasks, subs, id) => {
 const fixFileCount = (tasks, files, id) => tasks.map((t) => (t.id === id ? { ...t, attachments: files.filter((f) => f.taskId === id).length } : t));
 export default function useTaskStore() {
   const [store, setStore] = useState(() => loadJSON(KEY, start));
+  // always holds the newest store, so the listener below can tell if someone else changed it
+  const latest = useRef(store);
+  useEffect(() => {
+    latest.current = store;
+  });
   useEffect(() => {
     saveJSON(KEY, store);
     notifyDataChanged();
   }, [store]);
+  // the header can add tasks too, when it does we load them instead of overwriting them later
+  useEffect(() => {
+    const pickUpChanges = () => {
+      const saved = loadJSON(KEY, null);
+      if (saved && JSON.stringify(saved) !== JSON.stringify(latest.current)) setStore(saved);
+    };
+    window.addEventListener(DATA_EVENT, pickUpChanges);
+    return () => window.removeEventListener(DATA_EVENT, pickUpChanges);
+  }, []);
   const updateTask = (id, changes) => {
     setStore((old) => {
       const task = old.tasks.find((t) => t.id === id);
@@ -36,28 +47,8 @@ export default function useTaskStore() {
       return { ...old, tasks: old.tasks.map((t) => (t.id === id ? next : t)), history, activity };
     });
   };
-  const addTask = (data) => {
-    setStore((old) => {
-      let big = 0;
-      old.tasks.forEach((t) => {
-        const n = Number(t.id.slice(3));
-        if (n > big) big = n;
-      });
-      const task = {
-        id: "NX-" + (big + 1), projectId: data.projectId, title: data.title, description: "", status: data.status,
-        priority: data.priority, assigneeId: data.assigneeId, reporterId: currentUserId, label: data.label,
-        startDate: data.dueDate < DEMO_TODAY ? data.dueDate : DEMO_TODAY, dueDate: data.dueDate, estimateHours: 4,
-        subtasksDone: 0, subtasksTotal: 0, attachments: 0, comments: 0, blocked: false, dependsOn: null,
-        completedAt: data.status === "Done" ? DEMO_TODAY : null,
-      };
-      const note = { id: uid("act"), userId: currentUserId, projectId: data.projectId, verb: "created", target: data.title, suffix: "", ago: "just now", at: Date.now() };
-      return { ...old, tasks: [...old.tasks, task], activity: [note, ...old.activity] };
-    });
-  };
-  // things that are not about one task (a project was created, its status changed...)
-  const logActivity = (entry) => {
-    setStore((old) => ({ ...old, activity: [{ id: uid("act"), userId: currentUserId, ago: "just now", at: Date.now(), suffix: "", ...entry }, ...old.activity] }));
-  };
+  const addTask = (data) => setStore((old) => withNewTask(old, data));
+  const logActivity = (entry) => setStore((old) => withActivity(old, entry));
   const deleteTask = (id) => setStore((old) => ({ ...old, tasks: old.tasks.filter((t) => t.id !== id) }));
   const toggleSubtask = (taskId, subId) => {
     setStore((old) => {

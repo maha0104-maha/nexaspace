@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LayoutGrid, Table2 } from "lucide-react";
 
 import Button from "../common/Button";
-import { notifyDataChanged } from "../../utils/liveData";
+import { DATA_EVENT, notifyDataChanged } from "../../utils/liveData";
 import Dropdown from "../common/Dropdown";
 import SearchInput from "../common/SearchInput";
 
@@ -102,6 +102,25 @@ export const useProjects = (initial = seedProjects) => {
             return initial;
         }
     });
+
+    // always holds the newest list, to notice when the header created a project
+    const latest = useRef(projects);
+    useEffect(() => {
+        latest.current = projects;
+    });
+
+    useEffect(() => {
+        const pickUpChanges = () => {
+            try {
+                const saved = JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY));
+                if (Array.isArray(saved) && JSON.stringify(saved) !== JSON.stringify(latest.current)) setProjects(saved);
+            } catch {
+                /* nothing saved yet */
+            }
+        };
+        window.addEventListener(DATA_EVENT, pickUpChanges);
+        return () => window.removeEventListener(DATA_EVENT, pickUpChanges);
+    }, []);
 
     useEffect(() => {
         try {

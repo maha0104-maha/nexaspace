@@ -1,43 +1,82 @@
-import {useState} from "react";
-import { Link, useLocation} from "react-router-dom";
+import {useState,useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Plus, Bell, ChevronDown, ChevronRight, X, Check, CheckSquare, FolderPlus, Command } from "lucide-react";
 import Button from "../common/Button";
-import Input from "../common/Input";
 import Dropdown from "../common/Dropdown";
 import Avatar from "../common/Avatar";
 import Badge from "../common/Badge";
-import {loadJSON} from "../../utils/storage";
-import {projects as seedProjects} from "../../data";
+import CommandPalette from "./CommandPalette";
+import CreateTaskModal from "../projects/CreateTaskModal";
+import ProjectForm from "../projects/ProjectForm";
+import { loadJSON } from "../../utils/storage";
+import { getLiveProjects, addProjectToStorage } from "../../utils/liveData";
+import { readStore, writeStore, withNewTask, withActivity } from "../../utils/taskStore";
+import { OPEN_PALETTE } from "../../utils/paletteSearch";
+import { projects as seedProjects } from "../../data";
 
-// project name 
-const getProjectName=(id)=>{
-  const saved=loadJSON("nexaspace.projects.v1",null);
-  const list=Array.isArray(saved)?saved:seedProjects;
-  return list.find((p)=>p.id===id)?.name|| "Project";
+// project name for the breadcrumb (same saved list the Projects page uses)
+const getProjectName = (id) => {
+  const saved = loadJSON("nexaspace.projects.v1", null);
+  const list = Array.isArray(saved) ? saved : seedProjects;
+  return list.find((p) => p.id === id)?.name || "Project";
 };
 
 function Header({title="Overview",onCreateTask,onCreateProject}) {
-  const {pathname} = useLocation();
-  const match=pathname.match(/^\/projects\/([^/]+)/);
-  const heading=match ? getProjectName(match[1]) : pathname === "/projects" ? "Projects" : title;
-  const [searchOpen,setSearchOpen]=useState(false);
-  const [searchValue,setSearchValue]=useState("");
+  const { pathname } = useLocation();
+  const match = pathname.match(/^\/projects\/([^/]+)/);
+  const heading = match ? getProjectName(match[1]) : pathname === "/projects" ? "Projects" : title;
+  const navigate = useNavigate();
+  const [paletteOpen,setPaletteOpen]=useState(false);
+  const [taskOpen,setTaskOpen]=useState(false);
+  const [projectOpen,setProjectOpen]=useState(false);
+  const projects = getLiveProjects();
+
+  // Cmd+K / Ctrl+K opens and closes the palette, the sidebar button opens it too
+  useEffect(()=>{
+    const onKey=(event)=>{
+      if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){
+        event.preventDefault();
+        setPaletteOpen((open)=>!open);
+      }
+    };
+    const onOpen=()=>setPaletteOpen(true);
+    window.addEventListener("keydown",onKey);
+    window.addEventListener(OPEN_PALETTE,onOpen);
+    return ()=>{
+      window.removeEventListener("keydown",onKey);
+      window.removeEventListener(OPEN_PALETTE,onOpen);
+    };
+  },[]);
+
+  // with no projects yet a task has nowhere to go, so start with a project
+  const openTask=()=>(projects.length?setTaskOpen(true):setProjectOpen(true));
+  const createTask=(data)=>{
+    writeStore(withNewTask(readStore(),data));
+    setTaskOpen(false);
+  };
+  const createProject=(project)=>{
+    addProjectToStorage(project);
+    writeStore(withActivity(readStore(),{projectId:project.id,verb:"created the project",target:project.name}));
+    setProjectOpen(false);
+    navigate("/projects/"+project.id);
+  };
   const createOptions=[{label:"New task",
       description:"Add work to a project",
       icon:CheckSquare,
       color:"#4F46E5",
-      onSelect:onCreateTask,
+      onSelect:onCreateTask||openTask,
     },
     {
       label:"New project",
       description:"Set up team, dates and goals",
       icon:FolderPlus,
       color:"#0F9D75",
-      onSelect:onCreateProject,
+      onSelect:onCreateProject||(()=>setProjectOpen(true)),
     },
   ];
 
   return (
+    <>
     <header className="sticky top-0 z-30 w-full border-b border-[var(--color-border)] bg-[var(--color-surface)]">
       <div className="flex h-[64px] items-center justify-between gap-3 pl-[60px] pr-4 sm:pr-[20px] lg:pl-[34px]">
         <div className="flex min-w-0 items-center gap-[10px] text-[13px] leading-[18px]">
@@ -59,32 +98,10 @@ function Header({title="Overview",onCreateTask,onCreateProject}) {
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-[12px]">
-          {/* search */}
-          <div className="relative">
-            {searchOpen?(
-              <div className="absolute right-0 top-0 z-40 flex h-[36px] w-[240px] items-center gap-[8px] rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] px-[12px] shadow-sm sm:static sm:w-[260px]">
-                <Search size={15} strokeWidth={1.8}
-                  className="shrink-0 text-[var(--color-text-muted)]"/>
-                <Input autoFocus type="search" value={searchValue}
-                  onChange={(event)=>setSearchValue(event.target.value)}
-                  placeholder="Search projects, tasks, people"
-                  aria-label="Search projects, tasks, and people"
-                  className="!h-auto !min-w-0 !flex-1 !rounded-none !border-0 !bg-transparent !px-0 !py-0 !text-[13px] !shadow-none focus:!ring-0"/>
-               <button
-                  type="button"
-                  onClick={()=>{
-                    setSearchOpen(false);
-                    setSearchValue("");
-                  }}
-                  aria-label="Close search"
-                  className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-primary)]">
-                  <X size={15}/>
-                </button>
-              </div>
-            ):(
-              <button
+          {/* search: opens the command palette */}
+          <button
                 type="button"
-                onClick={()=>setSearchOpen(true)}
+                onClick={()=>setPaletteOpen(true)}
                 aria-label="Open search"
                 className="flex h-[36px] items-center gap-[8px] rounded-[8px] border border-[var(--color-border)] bg-[#F9FAFB] px-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-background)] lg:w-[260px]">
                 <Search size={15} strokeWidth={1.8} className="shrink-0"/>
@@ -95,8 +112,6 @@ function Header({title="Overview",onCreateTask,onCreateProject}) {
                   <span className="inline-flex items-center gap-[2px]"><Command size={10} strokeWidth={1.8} />K</span>
                 </kbd>
               </button>
-            )}
-          </div>
 
           <Dropdown
             mode="menu"
@@ -194,6 +209,21 @@ function Header({title="Overview",onCreateTask,onCreateProject}) {
         </div>
       </div>
     </header>
+
+    {paletteOpen&&(
+      <CommandPalette
+        onClose={()=>setPaletteOpen(false)}
+        onCreateTask={onCreateTask||openTask}
+        onCreateProject={onCreateProject||(()=>setProjectOpen(true))}/>
+    )}
+    <CreateTaskModal
+      isOpen={taskOpen}
+      onClose={()=>setTaskOpen(false)}
+      onCreate={createTask}
+      projectList={projects}
+      projectId={match?match[1]:projects[0]?.id}/>
+    <ProjectForm isOpen={projectOpen} onClose={()=>setProjectOpen(false)} onSubmit={createProject}/>
+    </>
   );
 }
 

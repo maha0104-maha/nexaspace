@@ -1,4 +1,4 @@
-import { loadJSON } from "./storage";
+import { loadJSON, saveJSON } from "./storage";
 import { projects as seedProjects, tasks as seedTasks } from "../data";
 
 // the same keys the rest of the app saves to (useTaskStore.js and ProjectFilters.jsx)
@@ -29,3 +29,11 @@ export const getLiveTasks = () => {
 // already open (like the sidebar) can read the new numbers
 export const DATA_EVENT = "nexaspace:data";
 export const notifyDataChanged = () => window.dispatchEvent(new Event(DATA_EVENT));
+
+// add one project to the saved list (the header creates projects this way)
+export const addProjectToStorage = (project) => {
+  const saved = loadJSON(PROJECTS_KEY, null);
+  const list = Array.isArray(saved) ? saved : seedProjects;
+  saveJSON(PROJECTS_KEY, [...list, project]);
+  notifyDataChanged();
+};
