@@ -1,12 +1,9 @@
-/* eslint-disable react-refresh/only-export-components */
-import { useEffect, useMemo, useRef, useState } from "react";
-import { LayoutGrid, Table2 } from "lucide-react";
-
+import {useEffect,useMemo,useRef,useState } from "react";
+import {LayoutGrid,Table2} from "lucide-react";
 import Button from "../common/Button";
 import { DATA_EVENT, notifyDataChanged } from "../../utils/liveData";
 import Dropdown from "../common/Dropdown";
 import SearchInput from "../common/SearchInput";
-
 import {
     projects as seedProjects,
     users as allUsers,
@@ -16,11 +13,7 @@ import {
     SORT_OPTIONS,
 } from "../../data";
 
-/* -------------------------------------------------------------------------- */
-/*                         options + pure filter logic                        */
-/* -------------------------------------------------------------------------- */
 
-// "" always means "Any ..." (it is the Dropdown placeholder option)
 export const DEFAULT_FILTERS = {
     search: "",
     status: "",
@@ -86,9 +79,7 @@ export const applyProjectFilters = (list, filters) => {
         .sort(SORTERS[filters.sort] || SORTERS.deadline);
 };
 
-/* -------------------------------------------------------------------------- */
-/*          hook: everything the Projects page needs, in one call             */
-/* -------------------------------------------------------------------------- */
+
 
 export const PROJECTS_STORAGE_KEY = "nexaspace.projects.v1";
 
@@ -103,7 +94,7 @@ export const useProjects = (initial = seedProjects) => {
         }
     });
 
-    // always holds the newest list, to notice when the header created a project
+ 
     const latest = useRef(projects);
     useEffect(() => {
         latest.current = projects;
@@ -127,7 +118,7 @@ export const useProjects = (initial = seedProjects) => {
             localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
             notifyDataChanged();
         } catch {
-            /* storage full or unavailable - ignore */
+           
         }
     }, [projects]);
 
@@ -167,9 +158,7 @@ export const useProjects = (initial = seedProjects) => {
     };
 };
 
-/* -------------------------------------------------------------------------- */
-/*                              Grid / Table toggle                           */
-/* -------------------------------------------------------------------------- */
+
 
 export const ProjectViewToggle = ({ view, setView }) => {
     const options = [
@@ -208,11 +197,9 @@ export const ProjectViewToggle = ({ view, setView }) => {
     );
 };
 
-/* -------------------------------------------------------------------------- */
-/*                                  filter bar                                */
-/* -------------------------------------------------------------------------- */
 
-/*  <ProjectFilters filters={filters} onChange={setFilter} onClear={clearFilters} />  */
+
+
 const ProjectFilters = ({
     filters = DEFAULT_FILTERS,
     onChange = () => {},

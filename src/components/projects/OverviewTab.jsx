@@ -4,7 +4,7 @@ import Avatar from "../common/Avatar";
 import { TASK_STATUSES, STATUS_META, formatLongDate, daysUntil, getUserById } from "../../data";
 import { getDueLabel, isOverdue, DUE_COLORS } from "../../utils/taskUtils";
 
-// small pieces used only in this file (we can move them to common later)
+// small pieces used only in this file 
 function Panel({ title, children }) {
   return (
     <Card contentClassName="!p-4">

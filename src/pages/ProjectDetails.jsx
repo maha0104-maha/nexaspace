@@ -12,7 +12,7 @@ import FilesTab from "../components/projects/FilesTab";
 import ActivityTab from "../components/projects/ActivityTab";
 import TaskDrawer from "../components/projects/TaskDrawer";
 import CreateTaskModal from "../components/projects/CreateTaskModal";
-import ProjectSettingsModal from "../components/projects/ProjectSettingsModal";
+import ProjectForm from "../components/projects/ProjectForm";
 import useTaskStore from "../hooks/useTaskStore";
 import { loadJSON, saveJSON } from "../utils/storage";
 import { notifyDataChanged } from "../utils/liveData";
@@ -52,7 +52,6 @@ function Details({ first }) {
   const members = project.memberIds.map(getUserById).filter(Boolean);
   const isDemo = seedProjects.some((p) => p.id === project.id);
 
-  // keep the "x of y tasks" on the project card correct (saved only, no extra render)
   useEffect(() => {
     const list = getProjects();
     const saved = list.find((p) => p.id === project.id);
@@ -67,7 +66,7 @@ function Details({ first }) {
     store.deleteTask(task.id);
   };
 
-  // save any change to this project (status, settings...)
+  // save any change to this project 
   const changeProject = (changes) => {
     saveProjects(getProjects().map((p) => (p.id === project.id ? { ...p, ...changes } : p)));
     setProject({ ...project, ...changes });
@@ -76,9 +75,12 @@ function Details({ first }) {
     changeProject({ status });
     store.logActivity({ projectId: project.id, verb: "changed the status of", target: project.name, suffix: "to " + status });
   };
-  // settings can change the deadline, which is worth showing in the activity feed
+
   const saveSettings = (data) => {
     changeProject(data);
+    if (data.status !== project.status) {
+      store.logActivity({ projectId: project.id, verb: "changed the status of", target: data.name, suffix: "to " + data.status });
+    }
     if (data.dueDate !== project.dueDate) {
       store.logActivity({ projectId: project.id, verb: "changed the deadline of", target: data.name, suffix: "to " + formatShortDate(data.dueDate) });
     }
@@ -120,8 +122,7 @@ function Details({ first }) {
       {openTask && <TaskDrawer key={openTask.id} task={openTask} project={project} store={store} onClose={() => setOpenId(null)} onDelete={removeTask} />}
       <CreateTaskModal isOpen={create.open} status={create.status} projectId={project.id} projectList={getProjects()}
         onClose={() => setCreate({ open: false, status: "To Do" })} onCreate={addTask} />
-      <ProjectSettingsModal isOpen={settings} project={project} onClose={() => setSettings(false)}
-        onSave={saveSettings} />
+      <ProjectForm isOpen={settings} project={project} onClose={() => setSettings(false)} onSubmit={saveSettings} />
     </div>
   );
 }

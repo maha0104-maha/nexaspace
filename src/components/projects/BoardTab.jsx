@@ -8,7 +8,7 @@ import { TASK_STATUSES, STATUS_META, PROJECT_PRIORITIES, TASK_LABELS, BOARD_SORT
 
 const START = { search: "", assignee: "", priority: "", label: "", sort: "Manual order" };
 
-// dropdown with an icon on the left (move to common later)
+// dropdown with an icon on the left 
 function IconSelect({ icon: Icon, value, onChange, options, placeholder, label, width }) {
   return (
     <div className="relative shrink-0" style={{ width }}>
