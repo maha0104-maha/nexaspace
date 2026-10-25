@@ -77,6 +77,49 @@ const buildProject = (values) => ({
     estHoursLeft: 0,
 });
 
+// the form fields filled in from a project that already exists
+const valuesFromProject = (project) => ({
+    name: project.name,
+    description: project.description || "",
+    client: project.client || "",
+    leadId: project.leadId,
+    startDate: project.startDate,
+    dueDate: project.dueDate,
+    priority: project.priority,
+    status: project.status,
+    memberIds: project.memberIds.includes(project.leadId)
+        ? project.memberIds
+        : [project.leadId, ...project.memberIds],
+    color: project.iconColor || project.color || PROJECT_COLORS[0],
+    icon: project.icon,
+});
+
+// only the things the form edits, the rest of the project (id, tasks, counts) stays as it is
+const buildChanges = (values, project) => {
+    const changes = {
+        name: values.name.trim(),
+        client: values.client.trim() || "Internal",
+        description: values.description.trim(),
+        status: values.status,
+        priority: values.priority,
+        leadId: values.leadId,
+        memberIds: values.memberIds.includes(values.leadId)
+            ? values.memberIds
+            : [values.leadId, ...values.memberIds],
+        startDate: values.startDate,
+        dueDate: values.dueDate,
+        icon: values.icon,
+    };
+
+    // keep the icon background as it was unless a new colour was picked
+    if (values.color !== (project.iconColor || project.color)) {
+        changes.color = values.color;
+        changes.iconColor = values.color;
+        changes.iconBg = `${values.color}1F`;
+    }
+    return changes;
+};
+
 const validate = (values) => {
     const errors = {};
 
@@ -145,8 +188,15 @@ const Segmented = ({ label, value, options, onChange }) => (
 /*                                    form                                    */
 /* -------------------------------------------------------------------------- */
 
-const FormBody = ({ onClose, onSubmit }) => {
-    const [values, setValues] = useState(INITIAL_VALUES);
+// project = the project being edited, leave it out to create a new one
+const FormBody = ({ onClose, onSubmit, project }) => {
+    const editing = Boolean(project);
+    const [values, setValues] = useState(() => (editing ? valuesFromProject(project) : INITIAL_VALUES));
+
+    // a colour the project already has may not be one of our swatches, show it as an extra one
+    const startColor = editing ? project.iconColor || project.color : null;
+    const swatches =
+        !startColor || PROJECT_COLORS.includes(startColor) ? PROJECT_COLORS : [startColor, ...PROJECT_COLORS];
     const [errors, setErrors] = useState({});
 
     const set = (key, value) => {
@@ -181,14 +231,14 @@ const FormBody = ({ onClose, onSubmit }) => {
         setErrors(found);
         if (Object.keys(found).length) return;
 
-        onSubmit(buildProject(values));
+        onSubmit(editing ? buildChanges(values, project) : buildProject(values));
     };
 
     return (
         <Modal
             isOpen
             onClose={onClose}
-            title="New project"
+            title={editing ? "Update project" : "New project"}
             className="!max-w-[640px]"
             footer={
                 <>
@@ -196,7 +246,7 @@ const FormBody = ({ onClose, onSubmit }) => {
                         Cancel
                     </Button>
                     <Button type="submit" form="project-form">
-                        Create project
+                        {editing ? "Save changes" : "Create project"}
                     </Button>
                 </>
             }
@@ -330,7 +380,7 @@ const FormBody = ({ onClose, onSubmit }) => {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Color">
                         <div role="radiogroup" aria-label="Project color" className="flex flex-wrap gap-2.5 p-1">
-                            {PROJECT_COLORS.map((color) => {
+                            {swatches.map((color) => {
                                 const selected = values.color === color;
 
                                 return (
@@ -383,9 +433,10 @@ const FormBody = ({ onClose, onSubmit }) => {
     );
 };
 
-/*  <ProjectForm isOpen onClose={...} onSubmit={(project) => ...} />
+/*  <ProjectForm isOpen onClose={...} onSubmit={(project) => ...} />                 create
+    <ProjectForm isOpen project={project} onClose={...} onSubmit={(changes) => ...} />  edit
     Re-mounts on every open, so the form always starts fresh. */
-const ProjectForm = ({ isOpen, onClose, onSubmit }) =>
-    isOpen ? <FormBody onClose={onClose} onSubmit={onSubmit} /> : null;
+const ProjectForm = ({ isOpen, onClose, onSubmit, project }) =>
+    isOpen ? <FormBody onClose={onClose} onSubmit={onSubmit} project={project} /> : null;
 
 export default ProjectForm;

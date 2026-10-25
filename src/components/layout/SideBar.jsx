@@ -1,34 +1,57 @@
-import {useEffect,useRef,useState } from "react";
-import { LayoutGrid, FolderKanban, CalendarDays, Users, SquareCheck, ChartColumn, Inbox, Plus, Settings, HelpCircle, ChevronsUpDown, X, Menu, Command } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  LayoutGrid,
+  FolderKanban,
+  CalendarDays,
+  Users,
+  SquareCheck,
+  ChartColumn,
+  Inbox,
+  Plus,
+  Settings,
+  HelpCircle,
+  ChevronsUpDown,
+  X,
+  Menu,
+  Command,
+} from "lucide-react";
 import useLiveData from "../../hooks/useLiveData";
 import { OPEN_PALETTE } from "../../utils/paletteSearch";
 import { currentUserId } from "../../data";
-import {NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Avatar from "../common/Avatar";
 
 const mainNavigation = [
-  {name:"Overview",path:"/",icon:LayoutGrid },
-  {name:"Projects",path:"/projects",icon:FolderKanban },
-  {name:"My Tasks",path:"/mytasks",icon:SquareCheck,count:14},
-  {name:"Calendar",path:"/calendar",icon:CalendarDays },
-  {name:"Team",path:"/team",icon:Users },
-  {name:"Reports & Analytics",path:"/reports",icon:ChartColumn },
-  {name:"Inbox",path:"/inbox",icon:Inbox,count:4},
+  { name: "Overview", path: "/", icon: LayoutGrid },
+  { name: "Projects", path: "/projects", icon: FolderKanban },
+  { name: "My Tasks", path: "/mytasks", icon: SquareCheck, count: 14 },
+  { name: "Calendar", path: "/calendar", icon: CalendarDays },
+  { name: "Team", path: "/team", icon: Users },
+  { name: "Reports & Analytics", path: "/reports", icon: ChartColumn },
+  { name: "Inbox", path: "/inbox", icon: Inbox, count: 4 },
 ];
 
-const navClass = ({isActive})=>
+const navClass = ({ isActive }) =>
   `group flex h-[36px] w-full min-w-0 items-center gap-[12px] rounded-[8px] border px-[11px] text-[13.5px] leading-[18px] transition-colors ${
-    isActive?"border-[var(--color-border)] bg-[var(--color-surface)] font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] [&_svg]:text-[var(--color-primary)]"
-      :"border-transparent font-normal text-[#1F2937] hover:bg-[var(--color-background)]"}`;
+    isActive
+      ? "border-[var(--color-border)] bg-[var(--color-surface)] font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-sm)] [&_svg]:text-[var(--color-primary)]"
+      : "border-transparent font-normal text-[#1F2937] hover:bg-[var(--color-background)]"
+  }`;
 
-const projectClass = ({isActive})=>
+const projectClass = ({ isActive }) =>
   `group flex h-[32px] w-full min-w-0 items-center gap-[10px] rounded-[8px] border px-[10px] text-[13px] leading-[18px] transition-colors ${
-    isActive?"border-transparent bg-[var(--color-primary-light)] font-semibold text-[var(--color-primary)]"
-      :"border-transparent font-normal text-[#1F2937] hover:bg-[var(--color-background)]"}`;
+    isActive
+      ? "border-transparent bg-[var(--color-primary-light)] font-semibold text-[var(--color-primary)]"
+      : "border-transparent font-normal text-[#1F2937] hover:bg-[var(--color-background)]"
+  }`;
 
-function Sidebar(){
-  // projects and tasks as they are right now (updates when anything is saved)
+function Sidebar() {
   const { projects: savedProjects, tasks: savedTasks } = useLiveData();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const workspaceRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const projects = savedProjects.map((project) => {
     const list = savedTasks.filter((task) => task.projectId === project.id);
@@ -40,37 +63,62 @@ function Sidebar(){
       progress: (list.length ? Math.round((done / list.length) * 100) : 0) + "%",
     };
   });
-  const myOpenTasks = savedTasks.filter((task) => task.assigneeId === currentUserId && task.status !== "Done").length;
 
-  const [mobileOpen, setMobileOpen]=useState(false);
-  const [workspaceOpen, setWorkspaceOpen]=useState(false);
-  const workspaceRef = useRef(null);
+  const myOpenTasks = savedTasks.filter(
+    (task) => task.assigneeId === currentUserId && task.status !== "Done"
+  ).length;
 
-  useEffect(()=>{
-    if (!workspaceOpen) return;
+  useEffect(() => {
+    if (!workspaceOpen) {
+      setFocusedIndex(-1);
+      return;
+    }
 
-    const handleClickOutside=(event)=>{
-      if(workspaceRef.current && !workspaceRef.current.contains(event.target)){
+    const handleClickOutside = (event) => {
+      if (workspaceRef.current && !workspaceRef.current.contains(event.target)) {
         setWorkspaceOpen(false);
       }
     };
 
-    const handleEscape=(event)=>{
-      if(event.key==="Escape"){
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
         setWorkspaceOpen(false);
+        return;
+      }
+
+      // Query buttons inside the dropdown box
+      const focusableElements = dropdownRef.current
+        ? dropdownRef.current.querySelectorAll('button[role="menuitemradio"]')
+        : [];
+      
+      if (focusableElements.length === 0) return;
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setFocusedIndex((prev) => {
+          const nextIndex = prev + 1 >= focusableElements.length ? 0 : prev + 1;
+          focusableElements[nextIndex]?.focus();
+          return nextIndex;
+        });
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setFocusedIndex((prev) => {
+          const nextIndex = prev - 1 < 0 ? focusableElements.length - 1 : prev - 1;
+          focusableElements[nextIndex]?.focus();
+          return nextIndex;
+        });
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-
-    return()=>{
-      document.removeEventListener("mousedown",handleClickOutside);
-      document.removeEventListener("keydown",handleEscape);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  },[workspaceOpen]);
+  }, [workspaceOpen]);
 
-  const closeMobileMenu=()=>{
+  const closeMobileMenu = () => {
     setMobileOpen(false);
   };
 
@@ -87,27 +135,32 @@ function Sidebar(){
         <Menu size={19} />
       </button>
 
-      {/* background  mobile */}
+      {/* background mobile */}
       {mobileOpen && (
-        <button type="button" aria-label="Close navigation menu"
+        <button
+          type="button"
+          aria-label="Close navigation menu"
           onClick={closeMobileMenu}
           className="fixed inset-0 z-40 bg-black/30 lg:hidden"
         />
       )}
+
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex h-screen w-[var(--sidebar-width)] shrink-0 flex-col overflow-y-auto border-r border-[var(--color-border)] bg-[var(--color-sidebar)] transition-transform duration-200 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden] lg:sticky lg:top-0 lg:z-20 lg:translate-x-0 ${
-          mobileOpen?"translate-x-0":"-translate-x-full"
-        }`}>
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="relative shrink-0 px-[8px] pb-[12px] pt-[15px]">
           <div ref={workspaceRef} className="relative">
             <button
               type="button"
-              onClick={()=>setWorkspaceOpen(!workspaceOpen)}
+              onClick={() => setWorkspaceOpen(!workspaceOpen)}
               aria-haspopup="menu"
               aria-expanded={workspaceOpen}
               className={`flex h-[46px] w-full items-center gap-[10px] rounded-[8px] pl-[7px] pr-[11px] text-left transition-colors hover:bg-[#EEF0F3] ${
-                workspaceOpen?"bg-[#EEF0F3]" : ""
-              }`}>
+                workspaceOpen ? "bg-[#EEF0F3]" : ""
+              }`}
+            >
               <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[9px] bg-[var(--color-primary)] text-[15px] font-semibold text-white">
                 N
               </div>
@@ -122,21 +175,27 @@ function Sidebar(){
               <ChevronsUpDown
                 size={14}
                 strokeWidth={1.8}
-                className="shrink-0 text-[var(--color-text-muted)]"/>
+                className="shrink-0 text-[var(--color-text-muted)]"
+              />
             </button>
 
             {/* workspace dropdown */}
             {workspaceOpen && (
               <div
+                ref={dropdownRef}
                 role="menu"
-                className="absolute left-0 right-0 top-full z-50 mt-[3px] rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface)] p-[8px] shadow-lg">
+                className="absolute left-0 right-0 top-full z-50 mt-[3px] rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface)] p-[8px] shadow-lg"
+              >
                 <p className="px-[8px] pb-[7px] pt-[3px] text-[11px] font-semibold uppercase leading-[14px] tracking-[0.6px] text-[#6B7280]">
                   Workspace
                 </p>
-                <button type="button" role="menuitemradio"
+                <button
+                  type="button"
+                  role="menuitemradio"
                   aria-checked="true"
-                  onClick={()=>setWorkspaceOpen(false)}
-                  className="flex h-[40px] w-full items-center gap-[10px] rounded-[8px] bg-[#F3F4F6] px-[8px] text-left">
+                  onClick={() => setWorkspaceOpen(false)}
+                  className="flex h-[40px] w-full items-center gap-[10px] rounded-[8px] bg-[#F3F4F6] px-[8px] text-left focus:bg-[#E5E7EB] focus:outline-none"
+                >
                   <div className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-[6px] bg-[var(--color-primary)] text-[11px] font-semibold text-white">
                     N
                   </div>
@@ -147,35 +206,37 @@ function Sidebar(){
               </div>
             )}
           </div>
+
           {/* close button for mobile */}
           <button
             type="button"
-              onClick={closeMobileMenu}
+            onClick={closeMobileMenu}
             aria-label="Close sidebar"
             className="absolute right-1 top-1 rounded-md p-1 text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] lg:hidden"
           >
             <X size={18} />
           </button>
         </div>
+
         <nav className="flex-1 pb-[12px] pl-[9px] pr-[12px]">
           <div className="space-y-[2px]">
-            {mainNavigation.map((item)=>{
+            {mainNavigation.map((item) => {
               const Icon = item.icon;
               const count = item.path === "/mytasks" ? myOpenTasks : item.count;
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path==="/"}
+                  end={item.path === "/"}
                   onClick={closeMobileMenu}
-                  className={navClass}>
+                  className={navClass}
+                >
                   <Icon
                     size={16}
                     strokeWidth={1.8}
-                    className="shrink-0 text-[#4B5563] transition-colors group-hover:text-[var(--color-primary)]"/>
-                  <span className="min-w-0 flex-1 truncate">
-                    {item.name}
-                  </span>
+                    className="shrink-0 text-[#4B5563] transition-colors group-hover:text-[var(--color-primary)]"
+                  />
+                  <span className="min-w-0 flex-1 truncate">{item.name}</span>
                   {count !== undefined && count > 0 && (
                     <span className="flex h-[20px] min-w-[22px] shrink-0 items-center justify-center rounded-full bg-[#E9EBEF] px-[6px] text-[11px] font-medium leading-none text-[#374151]">
                       {count}
@@ -185,8 +246,7 @@ function Sidebar(){
               );
             })}
           </div>
-
-          {/* projects list */}
+                              {/* projects list */}
           <div className="mt-[23px]">
             <div className="mb-[7px] flex h-[20px] items-center justify-between px-[10px]">
               <p className="text-[11px] font-medium uppercase leading-[14px] tracking-[0.6px] text-[#6B7280]">
@@ -195,7 +255,8 @@ function Sidebar(){
               <button
                 type="button"
                 aria-label="Add project"
-                className="flex h-[20px] w-[20px] items-center justify-center rounded-[4px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-background)] hover:text-[var(--color-primary)]">
+                className="flex h-[20px] w-[20px] items-center justify-center rounded-[4px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              >
                 <Plus size={14} strokeWidth={1.8} />
               </button>
             </div>
@@ -205,10 +266,14 @@ function Sidebar(){
                   key={project.path}
                   to={project.path}
                   onClick={closeMobileMenu}
-                  className={projectClass}>
+                  className={(navState) => 
+                    `${projectClass(navState)} focus:bg-[var(--color-background)] focus:outline-none`
+                  }
+                >
                   <span
                     className="h-[8px] w-[8px] shrink-0 rounded-full"
-                    style={{backgroundColor:project.color}}/>
+                    style={{ backgroundColor: project.color }}
+                  />
                   <span className="min-w-0 flex-1 truncate">
                     {project.name}
                   </span>
@@ -220,32 +285,41 @@ function Sidebar(){
             </div>
           </div>
         </nav>
+
         {/* settings and user profile */}
         <div className="mt-auto shrink-0 border-t border-[var(--color-border)] pb-[10px] pl-[9px] pr-[12px] pt-[9px]">
-          <NavLink to="/settings" onClick={closeMobileMenu} className={navClass}>
+          <NavLink 
+            to="/settings" 
+            onClick={closeMobileMenu} 
+            className={(navState) => 
+              `${navClass(navState)} focus:border-[var(--color-border)] focus:bg-[var(--color-surface)] focus:outline-none`
+            }
+          >
             <Settings
               size={16}
               strokeWidth={1.8}
-              className="shrink-0 text-[#4B5563] transition-colors group-hover:text-[var(--color-primary)]"/>
-            <span className="min-w-0 flex-1 truncate">
-              Workspace settings
-            </span>
+              className="shrink-0 text-[#4B5563] transition-colors group-hover:text-[var(--color-primary)]"
+            />
+            <span className="min-w-0 flex-1 truncate">Workspace settings</span>
           </NavLink>
-          <button type="button"
-            onClick={()=>{
+          <button
+            type="button"
+            onClick={() => {
               closeMobileMenu();
               window.dispatchEvent(new Event(OPEN_PALETTE));
             }}
-            className={`${navClass({isActive:false})} mt-[2px] text-left`}>
+            className={`${navClass({ isActive: false })} mt-[2px] text-left focus:border-[var(--color-border)] focus:bg-[var(--color-surface)] focus:outline-none`}
+          >
             <HelpCircle
               size={16}
               strokeWidth={1.8}
-              className="shrink-0 text-[#4B5563] transition-colors group-hover:text-[var(--color-primary)]"/>
-            <span className="min-w-0 flex-1 truncate">
-              Help & shortcuts
-            </span>
+              className="shrink-0 text-[#4B5563] transition-colors group-hover:text-[var(--color-primary)]"
+            />
+            <span className="min-w-0 flex-1 truncate">Help & shortcuts</span>
             <kbd className="hidden shrink-0 rounded-[4px] border border-[var(--color-border)] bg-[var(--color-background)] px-[5px] py-[2px] font-sans text-[10px] leading-[12px] text-[var(--color-text-muted)] sm:inline-block">
-              <span className="inline-flex items-center gap-[2px]"><Command size={10} strokeWidth={1.8} />K</span>
+              <span className="inline-flex items-center gap-[2px]">
+                <Command size={10} strokeWidth={1.8} />K
+              </span>
             </kbd>
           </button>
 
@@ -256,7 +330,8 @@ function Sidebar(){
                 <Avatar
                   name="Aarav Mehta"
                   size="sm"
-                  className="!h-[32px] !w-[32px] !bg-[var(--color-primary-light)] !text-[11px] !font-semibold !text-[var(--color-primary)]"/>
+                  className="!h-[32px] !w-[32px] !bg-[var(--color-primary-light)] !text-[11px] !font-semibold !text-[var(--color-primary)]"
+                />
                 <span className="absolute bottom-0 right-0 h-[9px] w-[9px] rounded-full border-2 border-[var(--color-sidebar)] bg-[var(--color-success)]" />
               </div>
               <div className="min-w-0 flex-1">

@@ -1,16 +1,60 @@
-# React + Vite
+# NexaSpace
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+NexaSpace is a project management dashboard built using React. It helps users manage their projects and tasks from one place. I am building this project as part of my frontend development internship.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Dashboard to view projects and their progress
+- View different projects
+- Manage and track tasks
+- Sidebar to navigate between pages
+- Reusable components like buttons, cards, and modals
+- Responsive design
+- Save some data using localStorage
 
-## React Compiler
+## Technologies Used
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React
+- JavaScript
+- Tailwind CSS
+- React Router
+- Lucide React
 
-## Expanding the ESLint configuration
+## How to Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/maha0104-maha/nexaspace.git
+   ```
+
+2. Go to the project folder:
+
+   ```bash
+   cd nexaspace
+   ```
+
+3. Install the required packages:
+
+   ```bash
+   npm install
+   ```
+
+4. Run the project:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open the local URL shown in your terminal.
+
+
+
+## Screenshots
+
+Screenshots of the project will be added here.
+
+## About the Project
+
+This is a frontend project, so it currently uses sample data instead of a backend database. Local storage is used for saving data where needed.
+

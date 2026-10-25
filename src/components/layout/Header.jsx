@@ -8,28 +8,21 @@ import Badge from "../common/Badge";
 import CommandPalette from "./CommandPalette";
 import CreateTaskModal from "../projects/CreateTaskModal";
 import ProjectForm from "../projects/ProjectForm";
-import { loadJSON } from "../../utils/storage";
-import { getLiveProjects, addProjectToStorage } from "../../utils/liveData";
+import useLiveData from "../../hooks/useLiveData";
+import { addProjectToStorage } from "../../utils/liveData";
 import { readStore, writeStore, withNewTask, withActivity } from "../../utils/taskStore";
 import { OPEN_PALETTE } from "../../utils/paletteSearch";
-import { projects as seedProjects } from "../../data";
-
-// project name for the breadcrumb (same saved list the Projects page uses)
-const getProjectName = (id) => {
-  const saved = loadJSON("nexaspace.projects.v1", null);
-  const list = Array.isArray(saved) ? saved : seedProjects;
-  return list.find((p) => p.id === id)?.name || "Project";
-};
 
 function Header({title="Overview",onCreateTask,onCreateProject}) {
   const { pathname } = useLocation();
   const match = pathname.match(/^\/projects\/([^/]+)/);
-  const heading = match ? getProjectName(match[1]) : pathname === "/projects" ? "Projects" : title;
   const navigate = useNavigate();
   const [paletteOpen,setPaletteOpen]=useState(false);
   const [taskOpen,setTaskOpen]=useState(false);
   const [projectOpen,setProjectOpen]=useState(false);
-  const projects = getLiveProjects();
+  // live list, so the breadcrumb changes when a project is renamed
+  const { projects } = useLiveData();
+  const heading = match ? projects.find((p) => p.id === match[1])?.name || "Project" : pathname === "/projects" ? "Projects" : title;
 
   // Cmd+K / Ctrl+K opens and closes the palette, the sidebar button opens it too
   useEffect(()=>{
