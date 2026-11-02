@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { Folder, ChevronDown, Check, Plus } from "lucide-react";
 import useTaskStore from "../hooks/useTaskStore";
 import { getLiveProjects } from "../utils/liveData";
-import { withNewTask } from "../utils/taskStore";
 import { RANGES, buildDashboard } from "../components/dashboard/dashboardData";
 import OverviewKpiSection from "../components/dashboard/OverviewKpiSection";
 import TaskCompletionCard from "../components/dashboard/TaskCompletionCard";
@@ -9,8 +9,12 @@ import TasksByStatusCard from "../components/dashboard/TasksByStatusCard";
 import ProjectHealthCard from "../components/dashboard/ProjectHealthCard";
 import PriorityTasksCard from "../components/dashboard/PriorityTasksCard";
 import RecentActivityCard from "../components/dashboard/RecentActivityCard";
+import Button from "../components/common/Button";
 import Dropdown from "../components/common/Dropdown";
 import CreateTaskModal from "../components/projects/CreateTaskModal";
+
+// same look as the other menus in the app (status menu, card menu)
+const menuBox = "absolute right-0 top-10 z-30 w-[220px] rounded-[10px] border border-[var(--color-border)] bg-[var(--color-surface)] p-1 shadow-lg";
 
 function Overview() {
     const store = useTaskStore();
@@ -19,33 +23,20 @@ function Overview() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [justDone, setJustDone] = useState([]);
 
-    // Live projects from localStorage (sorted according to demo order + new additions)
+    // projects are saved in localStorage, tasks and activity come from the task store
     const projects = getLiveProjects();
 
-    // Determine current label for the dropdown button
+    // if the chosen project was deleted meanwhile, go back to showing all of them
     const selectedProject = projects.find((p) => p.id === selectedProjectId);
-    const currentProjectLabel = selectedProjectId === "all" ? "All projects" : (selectedProject?.name || "All projects");
+    const filterId = selectedProject ? selectedProjectId : "all";
+    const currentProjectLabel = selectedProject ? selectedProject.name : "All projects";
 
-    // Filter tasks and projects based on the selected project
-    const activeProjects = useMemo(() => {
-        if (selectedProjectId === "all") return projects;
-        return projects.filter((p) => p.id === selectedProjectId);
-    }, [projects, selectedProjectId]);
-
-    const activeTasks = useMemo(() => {
-        if (selectedProjectId === "all") return store.tasks;
-        return store.tasks.filter((t) => t.projectId === selectedProjectId);
-    }, [store.tasks, selectedProjectId]);
-
-    const activeActivity = useMemo(() => {
-        if (selectedProjectId === "all") return store.activity;
-        return store.activity.filter((a) => a.projectId === selectedProjectId);
-    }, [store.activity, selectedProjectId]);
-
+    // the dashboard only looks at the chosen project (or at everything)
+    const onlyChosen = (list, key) => (filterId === "all" ? list : list.filter((item) => item[key] === filterId));
     const dash = buildDashboard({
-        projects: activeProjects,
-        tasks: activeTasks,
-        activity: activeActivity,
+        projects: filterId === "all" ? projects : projects.filter((p) => p.id === filterId),
+        tasks: onlyChosen(store.tasks, "projectId"),
+        activity: onlyChosen(store.activity, "projectId"),
         range,
         justDone,
     });
@@ -64,13 +55,12 @@ function Overview() {
     };
 
     const handleCreateTask = (taskData) => {
-        if (store.setStore) {
-            store.setStore((old) => withNewTask(old, taskData));
-        } else if (store.addTask) {
-            store.addTask(taskData);
-        }
+        store.addTask(taskData);
         setIsCreateModalOpen(false);
     };
+
+    // the options of the project menu: "All projects" first, then every project
+    const projectOptions = [{ id: "all", name: "All projects" }, ...projects];
 
     return (
         <div className="px-4 pb-10 pt-[30px] sm:px-[34px]">
@@ -84,85 +74,39 @@ function Overview() {
                     </p>
                 </div>
 
-                {/* Right controls: Project Dropdown, Date Range selector, Black Create Task Button */}
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Project Selector using Reusable Dropdown in menu mode */}
                     <Dropdown
                         mode="menu"
+                        menuClassName={menuBox}
                         trigger={
-                            <button
-                                type="button"
-                                className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-[13px] font-medium text-[var(--color-text-primary)] shadow-sm transition-colors hover:bg-[var(--color-background)]"
-                            >
-                                <svg
-                                    className="h-4 w-4 text-[var(--color-text-secondary)]"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="1.8"
-                                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                                    />
-                                </svg>
-                                <span>{currentProjectLabel}</span>
-                                <svg
-                                    className="h-3.5 w-3.5 text-[var(--color-text-secondary)]"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
+                            <Button variant="outline" aria-label="Choose project">
+                                <Folder size={14} strokeWidth={1.7} />
+                                <span className="max-w-[160px] truncate">{currentProjectLabel}</span>
+                                <ChevronDown size={14} strokeWidth={1.7} />
+                            </Button>
                         }
-                        menuClassName="absolute right-0 z-50 mt-1.5 w-56 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-1.5 shadow-[var(--shadow-lg)]"
                     >
                         {({ close }) => (
-                            <div className="flex flex-col gap-0.5 max-h-72 overflow-y-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedProjectId("all");
-                                        close();
-                                    }}
-                                    className={`flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors ${
-                                        selectedProjectId === "all"
-                                            ? "bg-[var(--color-background)] font-medium text-[var(--color-text-primary)]"
-                                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] hover:text-[var(--color-text-primary)]"
-                                    }`}
-                                >
-                                    All projects
-                                </button>
-                                {projects.map((project) => (
-                                    <button
-                                        key={project.id}
-                                        type="button"
+                            <div className="max-h-[288px] overflow-y-auto">
+                                {projectOptions.map((option) => (
+                                    <Button
+                                        key={option.id}
+                                        variant="ghost"
+                                        role="menuitem"
+                                        className="w-full !justify-start"
                                         onClick={() => {
-                                            setSelectedProjectId(project.id);
+                                            setSelectedProjectId(option.id);
                                             close();
                                         }}
-                                        className={`flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors ${
-                                            selectedProjectId === project.id
-                                                ? "bg-[var(--color-background)] font-medium text-[var(--color-text-primary)]"
-                                                : "text-[var(--color-text-secondary)] hover:bg-[var(--color-background)] hover:text-[var(--color-text-primary)]"
-                                        }`}
                                     >
-                                        {project.name}
-                                    </button>
+                                        <span className="min-w-0 flex-1 truncate text-left">{option.name}</span>
+                                        {filterId === option.id && <Check size={14} strokeWidth={2} />}
+                                    </Button>
                                 ))}
                             </div>
                         )}
                     </Dropdown>
 
-                    {/* Date Range Selector */}
                     <div
                         role="radiogroup"
                         aria-label="Date range"
@@ -186,15 +130,14 @@ function Overview() {
                         ))}
                     </div>
 
-                    {/* Black Create Task Button */}
-                    <button
-                        type="button"
+                    <Button
+                        className="!bg-[var(--color-text-primary)]"
+                        disabled={projects.length === 0}
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#0F172A] px-3.5 text-[13px] font-medium text-white shadow-sm transition-colors hover:bg-black focus:outline-none focus:ring-2 focus:ring-black/20"
                     >
-                        <span className="text-[15px] leading-none">+</span>
-                        <span>Create task</span>
-                    </button>
+                        <Plus size={15} strokeWidth={2} aria-hidden="true" />
+                        Create task
+                    </Button>
                 </div>
             </div>
 
@@ -212,15 +155,13 @@ function Overview() {
                 <PriorityTasksCard tasks={dash.priorityTasks} onToggle={toggleTask} />
             </div>
 
-            {/* Create Task Modal */}
-            {isCreateModalOpen && (
-                <CreateTaskModal
-                    isOpen={isCreateModalOpen}
-                    onClose={() => setIsCreateModalOpen(false)}
-                    onSubmit={handleCreateTask}
-                    defaultProjectId={selectedProjectId !== "all" ? selectedProjectId : projects[0]?.id}
-                />
-            )}
+            <CreateTaskModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onCreate={handleCreateTask}
+                projectList={projects}
+                projectId={filterId !== "all" ? filterId : projects[0]?.id}
+            />
         </div>
     );
 }

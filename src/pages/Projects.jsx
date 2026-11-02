@@ -10,11 +10,13 @@ import ProjectFilters, {
 import ProjectCards from "../components/projects/ProjectCard";
 import ProjectForm from "../components/projects/ProjectForm";
 import useTaskStore from "../hooks/useTaskStore";
+import { formatShortDate } from "../data";
 
 function Projects() {
     const navigate = useNavigate();
     const store = useTaskStore();
     const [formOpen, setFormOpen] = useState(false);
+    const [editing, setEditing] = useState(null);
 
     const {
         projects,
@@ -25,6 +27,7 @@ function Projects() {
         setFilter,
         clearFilters,
         addProject,
+        updateProject,
         duplicateProject,
         archiveProject,
     } = useProjects();
@@ -34,6 +37,18 @@ function Projects() {
         store.logActivity({ projectId: project.id, verb: "created the project", target: project.name });
         clearFilters(); // make sure the new project isn't hidden by an active filter
         setFormOpen(false);
+    };
+
+    // the form hands back only what it edits, status and deadline changes go in the activity feed
+    const handleUpdate = (changes) => {
+        updateProject(editing.id, changes);
+        if (changes.status !== editing.status) {
+            store.logActivity({ projectId: editing.id, verb: "changed the status of", target: changes.name, suffix: "to " + changes.status });
+        }
+        if (changes.dueDate !== editing.dueDate) {
+            store.logActivity({ projectId: editing.id, verb: "changed the deadline of", target: changes.name, suffix: "to " + formatShortDate(changes.dueDate) });
+        }
+        setEditing(null);
     };
 
     return (
@@ -73,6 +88,7 @@ function Projects() {
                     projectList={filtered}
                     view={view}
                     onOpen={(project) => navigate("/projects/" + project.id)}
+                    onEdit={setEditing}
                     onClear={clearFilters}
                     onDuplicate={duplicateProject}
                     onArchive={archiveProject}
@@ -83,6 +99,13 @@ function Projects() {
                 isOpen={formOpen}
                 onClose={() => setFormOpen(false)}
                 onSubmit={handleCreate}
+            />
+
+            <ProjectForm
+                isOpen={editing !== null}
+                project={editing}
+                onClose={() => setEditing(null)}
+                onSubmit={handleUpdate}
             />
         </div>
     );

@@ -1,9 +1,12 @@
-import {useEffect,useMemo,useRef,useState } from "react";
-import {LayoutGrid,Table2} from "lucide-react";
+/* eslint-disable react-refresh/only-export-components */
+import { useEffect, useMemo, useRef, useState } from "react";
+import { LayoutGrid, Table2 } from "lucide-react";
+
 import Button from "../common/Button";
 import { DATA_EVENT, notifyDataChanged } from "../../utils/liveData";
 import Dropdown from "../common/Dropdown";
 import SearchInput from "../common/SearchInput";
+
 import {
     projects as seedProjects,
     users as allUsers,
@@ -84,7 +87,7 @@ export const applyProjectFilters = (list, filters) => {
 export const PROJECTS_STORAGE_KEY = "nexaspace.projects.v1";
 
 export const useProjects = (initial = seedProjects) => {
-    // first visit -> demo data; afterwards -> whatever is saved in localStorage
+  
     const [projects, setProjects] = useState(() => {
         try {
             const saved = JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY));
@@ -94,8 +97,7 @@ export const useProjects = (initial = seedProjects) => {
         }
     });
 
- 
-    const latest = useRef(projects);
+     const latest = useRef(projects);
     useEffect(() => {
         latest.current = projects;
     });
@@ -118,7 +120,7 @@ export const useProjects = (initial = seedProjects) => {
             localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
             notifyDataChanged();
         } catch {
-           
+            /* storage full or unavailable - ignore */
         }
     }, [projects]);
 
@@ -144,6 +146,8 @@ export const useProjects = (initial = seedProjects) => {
                 sort: current.sort,
             })),
         addProject: (project) => setProjects((list) => [...list, project]),
+        updateProject: (id, changes) =>
+            setProjects((list) => list.map((item) => (item.id === id ? { ...item, ...changes } : item))),
         duplicateProject: (project) =>
             setProjects((list) => [
                 ...list,
@@ -196,8 +200,6 @@ export const ProjectViewToggle = ({ view, setView }) => {
         </div>
     );
 };
-
-
 
 
 const ProjectFilters = ({
