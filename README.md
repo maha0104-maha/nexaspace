@@ -52,7 +52,7 @@ NexaSpace is a project management dashboard built using React. It helps users ma
 
 ## Screenshots
 
-Screenshots of the project will be added here.
+Screenshots of the project are in the assets/screenshots folder
 
 ## About the Project
 
